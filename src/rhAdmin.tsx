@@ -36,7 +36,7 @@ const convertGoogleDriveUrl = (url: string): string => {
   return url;
 };
 
-// Mock data con los nuevos enlaces de Google Drive
+// Mock data con los nuevos enlaces de Google Drive y más agencias
 const employees: Employee[] = [
   {
     id: 1,
@@ -54,20 +54,270 @@ const employees: Employee[] = [
     id: 2,
     name: 'María',
     lastName: 'González',
-    agency: 'NISSAUTO',
+    agency: 'CANANEA NISSAUTO',
     dateOfBirth: '16/03/2000',
     highDate: '01/07/2024',
     status: 'SI',
     lowDate: null,
     photo: 'https://drive.google.com/file/d/15AzJAz7gxWylt7a8q0WY-dAuZGdp-vxL/view?usp=drive_link',
     idUser: 'USR002'
-  }
+  },
+  {
+    id: 3,
+    name: 'Ricardo',
+    lastName: 'Arce Duarte',
+    agency: 'GUAYMAS',
+    dateOfBirth: '10/05/1988',
+    highDate: '20/01/2022',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR003'
+  },
+  {
+    id: 4,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },
+  {
+    id: 5,
+    name: 'Juan',
+    lastName: 'Evangelista Velázquez',
+    agency: 'GRANAUTO',
+    dateOfBirth: '30/07/1985',
+    highDate: '08/03/2017',
+    status: 'NO',
+    lowDate: '15/01/2023',
+    photo: '',
+    idUser: 'USR005'
+  },
+  {
+    id: 6,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 7,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 8,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 9,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 10,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 11,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 12,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 13,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 14,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 15,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 16,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },
+  {
+    id: 17,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 18,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 19,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 20,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 21,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 22,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },{
+    id: 23,
+    name: 'Sandra',
+    lastName: 'Olivas Mendoza',
+    agency: 'AGUA PRIETA NISSAUTO',
+    dateOfBirth: '25/09/1990',
+    highDate: '15/06/2019',
+    status: 'SI',
+    lowDate: null,
+    photo: '',
+    idUser: 'USR004'
+  },
 ];
 
-function App() {
+function rhAdmin() {
+  
+  // Estado para almacenar los datos de empleados procesados
+  // y los términos de búsqueda y filtros
+  // Se inicializa el estado de empleados con los datos procesados
   const [employeesData, setEmployeesData] = useState<ProcessedEmployee[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [nameSearchTerm, setNameSearchTerm] = useState<string>('');
+  const [otherSearchTerm, setOtherSearchTerm] = useState<string>('');
   const [selectedAgency, setSelectedAgency] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  
+  // Función para resetear todos los filtros
+  const resetFilters = () => {
+    setNameSearchTerm('');
+    setOtherSearchTerm('');
+    setSelectedAgency('');
+    setSelectedStatus('');
+  };
   
   // Procesamos los datos para convertir las URLs al cargar el componente
   useEffect(() => {
@@ -80,24 +330,43 @@ function App() {
 
   // Función para filtrar empleados
   const filteredEmployees = employeesData.filter(employee => {
-    const matchesSearch = 
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.idUser.toLowerCase().includes(searchTerm.toLowerCase());
+    // Filtro por nombre o ID de usuario
+    const matchesNameSearch = 
+      employee.name.toLowerCase().includes(nameSearchTerm.toLowerCase()) ||
+      employee.idUser.toLowerCase().includes(nameSearchTerm.toLowerCase());
     
+    // Filtro adicional por apellido o agencia
+    const matchesOtherSearch = 
+      employee.lastName.toLowerCase().includes(otherSearchTerm.toLowerCase()) ||
+      employee.agency.toLowerCase().includes(otherSearchTerm.toLowerCase());
+    
+    // Filtro por agencia seleccionada
     const matchesAgency = selectedAgency === '' || employee.agency === selectedAgency;
     
-    return matchesSearch && matchesAgency;
+    // Filtro por status
+    const matchesStatus = selectedStatus === '' || employee.status === selectedStatus;
+    
+    return matchesNameSearch && matchesOtherSearch && matchesAgency && matchesStatus;
   });
 
-  // Maneja el cambio en el campo de búsqueda
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  // Maneja el cambio en el campo de búsqueda por nombre/ID
+  const handleNameSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNameSearchTerm(e.target.value);
+  };
+
+  // Maneja el cambio en el campo de búsqueda por apellido/agencia
+  const handleOtherSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOtherSearchTerm(e.target.value);
   };
 
   // Maneja el cambio en el filtro de agencia
   const handleAgencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAgency(e.target.value);
+  };
+
+  // Maneja el cambio en el filtro de status
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
   };
 
   return (
@@ -115,120 +384,173 @@ function App() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* contenedor principal */}
       <div className="container mx-auto py-6 px-4">
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-wrap gap-4">
-          <input
-            type="text"
-            placeholder="Buscar empleado..."
-            className="px-4 py-2 border rounded-md flex-1"
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-          <select 
-            className="px-4 py-2 border rounded-md"
-            value={selectedAgency}
-            onChange={handleAgencyChange}
-          >
-            <option value="">Todas las agencias</option>
-            <option value="Sede Central">Sede Central</option>
-            <option value="Sucursal Norte">Sucursal Norte</option>
-          </select>
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+        {/* Filtros */}
+        <div className="mb-6 flex flex-wrap justify-end items-end gap-4">
+          <div className="flex-grow-0 min-w-[180px]">
+            <input
+              id="nameSearch"
+              type="text"
+              placeholder="Nombre"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              value={nameSearchTerm}
+              onChange={handleNameSearchChange}
+            />
+          </div>
+          
+          <div className="flex-grow-0 min-w-[180px]">
+            <input
+              id="otherSearch"
+              type="text"
+              placeholder="Apellido"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              value={otherSearchTerm}
+              onChange={handleOtherSearchChange}
+            />
+          </div>
+          
+          <div className="flex-grow-0 min-w-[180px]">
+            <select 
+              id="agencyFilter"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              value={selectedAgency}
+              onChange={handleAgencyChange}
+            >
+              <option value="">Todas las agencias</option>
+              <option value="NISSAUTO">NISSAUTO</option>
+              <option value="CANANEA NISSAUTO">CANANEA NISSAUTO</option>
+              <option value="AGUA PRIETA NISSAUTO">AGUA PRIETA NISSAUTO</option>
+              <option value="GUAYMAS">GUAYMAS</option>
+              <option value="GRANAUTO">GRANAUTO</option>
+            </select>
+          </div>
+          
+          <div className="flex-grow-0 min-w-[150px]">
+            <select 
+              id="statusFilter"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              value={selectedStatus}
+              onChange={handleStatusChange}
+            >
+              <option value="">Todos los status</option>
+              <option value="SI">SI</option>
+              <option value="NO">NO</option>
+            </select>
+          </div>
+          
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
             Buscar
+          </button>
+          
+          <button 
+            onClick={resetFilters}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
+            Resetear filtros
           </button>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Foto
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Apellido
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Agencia
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha de Nacimiento
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha de Alta
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha de Baja
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Usuario
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredEmployees.map((employee) => (
-                <tr key={employee.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <img
-                      src={employee.photoUrl}
-                      alt={`${employee.name} ${employee.lastName}`}
-                      className="h-10 w-10 rounded-full object-cover"
-                      onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        // Usar una imagen base64 sencilla en lugar de depender de un servicio externo
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
-                      }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.lastName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.agency}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.dateOfBirth}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.highDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      employee.status === 'SI' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {employee.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {employee.lowDate || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.idUser}</td>
+        {/* Mesa contenedor con altura fija */}
+        <div className="bg-white rounded-lg shadow">
+          {/* Este div externo mantiene el estilo del contenedor */}
+          <div style={{ height: '600px', overflow: 'auto' }} className="border-t border-gray-200">
+            {/* La tabla dentro del contenedor de scroll */}
+            <table className="min-w-full">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Foto
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Nombre
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Apellido
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Agencia
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Fecha de Nacimiento
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Fecha de Alta
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    Fecha de Baja
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                    id_Usuario
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredEmployees.map((employee, index) => (
+                  <tr key={`${employee.id}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100'}>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <img
+                        src={employee.photoUrl}
+                        alt={`${employee.name} ${employee.lastName}`}
+                        className="h-10 w-10 rounded-full object-cover"
+                        onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          // Usar una imagen base64 sencilla en lugar de depender de un servicio externo
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+                        }}
+                      />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.lastName}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.agency}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.dateOfBirth}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.highDate}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        employee.status === 'SI' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {employee.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {employee.lowDate || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.idUser}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Pagination */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Mostrando <span className="font-medium">1</span> a{' '}
-            <span className="font-medium">{filteredEmployees.length}</span> de{' '}
-            <span className="font-medium">{filteredEmployees.length}</span> resultados
-          </div>
-          <div className="flex space-x-2">
-            <button className="px-4 py-2 border rounded-md disabled:opacity-50">
-              Anterior
-            </button>
-            <button className="px-4 py-2 border rounded-md bg-purple-700 text-white">
-              1
-            </button>
-            <button className="px-4 py-2 border rounded-md disabled:opacity-50">
-              Siguiente
-            </button>
+        {/* Paginacion */}
+        <div className="mt-4 bg-white p-3 rounded-lg shadow border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Mostrando <span className="font-medium">1</span> a{' '}
+              <span className="font-medium">{filteredEmployees.length}</span> de{' '}
+              <span className="font-medium">{filteredEmployees.length}</span> resultados
+            </div>
+            <div className="flex space-x-2">
+              <button className="px-4 py-2 border rounded-md disabled:opacity-50">
+                Anterior
+              </button>
+              <button className="px-4 py-2 border rounded-md bg-blue-700 text-white">
+                1
+              </button>
+              <button className="px-4 py-2 border rounded-md disabled:opacity-50">
+                Siguiente
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -236,4 +558,4 @@ function App() {
   );
 }
 
-export default App;
+export default rhAdmin;
