@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from 'path';
+import crypto from 'crypto';
 
 // Configuración para ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -32,6 +33,63 @@ const dbConfig = {
 
 // Crear pool de conexiones MySQL
 const pool = mysql.createPool(dbConfig);
+
+// Ruta para autenticar usuarios
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email y contraseña son requeridos' });
+    }
+    
+    const connection = await pool.getConnection();
+    
+    // Consultar el usuario por email
+    const [users] = await connection.query(`
+      SELECT id, name, last_name, email, password, agency 
+      FROM Users 
+      WHERE email = ?
+    `, [email]);
+    
+    connection.release();
+    
+    if (users.length === 0) {
+      return res.status(401).json({ message: 'Credenciales incorrectas' });
+    }
+    
+    const user = users[0];
+    
+    // Verificar la contraseña - usando MD5 como en tu script SQL
+    const hashedPassword = crypto.createHash('md5').update(password).digest('hex');
+    
+    if (user.password !== hashedPassword) {
+      return res.status(401).json({ message: 'Credenciales incorrectas' });
+    }
+    
+    // Crear un objeto de usuario sin la contraseña
+    const userResponse = {
+      id: user.id,
+      name: user.name,
+      last_name: user.last_name,
+      email: user.email,
+      agency: user.agency
+    };
+    
+    // En un sistema real, aquí generarías un JWT
+    // Por ahora usamos un token simple
+    const token = crypto.randomBytes(64).toString('hex');
+    
+    res.json({
+      success: true,
+      user: userResponse,
+      token: token
+    });
+  } catch (error) {
+    console.error('Error de autenticación:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+});
 
 // Ruta para obtener todos los empleados
 app.get('/api/employees', async (req, res) => {
