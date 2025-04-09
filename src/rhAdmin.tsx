@@ -1,9 +1,7 @@
-import { Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, ChevronLeft, ChevronRight, Save, User, X, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MdLogout } from "react-icons/md";
-
-
 
 // Definimos la interfaz para los datos de empleados que recibiremos de la API
 interface Employee {
@@ -25,8 +23,36 @@ interface ProcessedEmployee extends Employee {
   photoUrl: string;
 }
 
+// Interfaz para el formulario de nuevo empleado
+interface NewEmployeeForm {
+  nombre: string;
+  apellido: string;
+  agencia: string;
+  fechaNacimiento: string;
+  fechaAlta: string;
+  status: string;
+  photo: string;
+  idUsuario: string;
+}
+
 // URL base de la API
 const API_URL = 'http://localhost:3001/api';
+
+// Lista de agencias disponibles
+const AGENCIAS = [
+  'AGUA PRIETA',
+  'CABORCA',
+  'CANANEA',
+  'GRANAUTO',
+  'GUAYMAS',
+  'NAVOJOA',
+  'MAGDALENA',
+  'MORELOS',
+  'NISSAUTO',
+  'NOGALES',
+  'PENASCO',
+  'SICREA'
+];
 
 // Función para convertir enlaces de Google Drive a URLs de imagen directas
 const convertGoogleDriveUrl = (url: string): string => {
@@ -48,7 +74,6 @@ const convertGoogleDriveUrl = (url: string): string => {
 };
 
 function rhAdmin() {
-
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
   const [employeesData, setEmployeesData] = useState<ProcessedEmployee[]>([]);
@@ -59,6 +84,19 @@ function rhAdmin() {
   const [selectedAgency, setSelectedAgency] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [agencies, setAgencies] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Estado para el formulario de nuevo empleado
+  const [formData, setFormData] = useState<NewEmployeeForm>({
+    nombre: '',
+    apellido: '',
+    agencia: '',
+    fechaNacimiento: '',
+    fechaAlta: '',
+    status: 'SI',
+    photo: '',
+    idUsuario: ''
+  });
 
   // Paginación
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -172,6 +210,93 @@ function rhAdmin() {
     setCurrentPage(1);
   };
 
+  // Maneja cambios en el formulario de nuevo empleado
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Maneja el envío del formulario de nuevo empleado
+  const handleSubmitForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Aquí se implementaría la lógica para enviar los datos al servidor
+      console.log('Datos a enviar:', formData);
+      
+      // Ejemplo de cómo se podría implementar la llamada a la API
+      /*
+      const response = await axios.post(`${API_URL}/employees`, {
+        name: formData.nombre,
+        last_name: formData.apellido,
+        agency: formData.agencia,
+        date_of_birth: formData.fechaNacimiento,
+        high_date: formData.fechaAlta,
+        status: formData.status,
+        photo: formData.photo,
+        id_user: parseInt(formData.idUsuario)
+      });
+      
+      if (response.status === 201) {
+        // Recargar la lista de empleados después de una creación exitosa
+        fetchEmployees();
+        // Cerrar el modal y limpiar el formulario
+        setShowModal(false);
+        setFormData({
+          nombre: '',
+          apellido: '',
+          agencia: '',
+          fechaNacimiento: '',
+          fechaAlta: '',
+          status: 'SI',
+          photo: '',
+          idUsuario: ''
+        });
+      }
+      */
+      
+      // Por ahora, solo reseteamos el formulario y cerramos el modal
+      setFormData({
+        nombre: '',
+        apellido: '',
+        agencia: '',
+        fechaNacimiento: '',
+        fechaAlta: '',
+        status: 'SI',
+        photo: '',
+        idUsuario: ''
+      });
+      setShowModal(false);
+      
+    } catch (err) {
+      console.error('Error al crear nuevo empleado:', err);
+      // Aquí se manejaría el error, posiblemente mostrando un mensaje al usuario
+    }
+  };
+
+  // Función para abrir el modal
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  // Función para cerrar el modal y resetear el formulario
+  const closeModal = () => {
+    setShowModal(false);
+    setFormData({
+      nombre: '',
+      apellido: '',
+      agencia: '',
+      fechaNacimiento: '',
+      fechaAlta: '',
+      status: 'SI',
+      photo: '',
+      idUsuario: ''
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -190,66 +315,77 @@ function rhAdmin() {
 
       {/* contenedor principal */}
       <div className="container mx-auto py-6 px-4">
-        {/* Filtros */}
-        <div className="mb-6 flex flex-wrap justify-end items-end gap-4">
-          <div className="flex-grow-0 min-w-[180px]">
-            <input
-              id="nameSearch"
-              type="text"
-              placeholder="Nombre"
-              className="w-full px-3 py-2 border rounded-md text-sm"
-              value={nameSearchTerm}
-              onChange={handleNameSearchChange}
-            />
-          </div>
-
-          <div className="flex-grow-0 min-w-[180px]">
-            <input
-              id="otherSearch"
-              type="text"
-              placeholder="Apellido"
-              className="w-full px-3 py-2 border rounded-md text-sm"
-              value={otherSearchTerm}
-              onChange={handleOtherSearchChange}
-            />
-          </div>
-
-          <div className="flex-grow-0 min-w-[180px]">
-            <select
-              id="agencyFilter"
-              className="w-full px-3 py-2 border rounded-md text-sm"
-              value={selectedAgency}
-              onChange={handleAgencyChange}
-            >
-              <option value="">Todas las agencias</option>
-              {agencies.map(agency => (
-                <option key={agency} value={agency}>{agency}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex-grow-0 min-w-[150px]">
-            <select
-              id="statusFilter"
-              className="w-full px-3 py-2 border rounded-md text-sm"
-              value={selectedStatus}
-              onChange={handleStatusChange}
-            >
-              <option value="">Todos los status</option>
-              <option value="SI">SI</option>
-              <option value="NO">NO</option>
-            </select>
-          </div>
-
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-            Buscar
+        <div className="flex justify-between items-center mb-6">
+          {/* Botón de Agregar Empleado */}
+          <button 
+            onClick={openModal}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center space-x-2"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Agregar Empleado</span>
           </button>
 
-          <button
-            onClick={resetFilters}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
-            Resetear filtros
-          </button>
+          {/* Filtros */}
+          <div className="flex flex-wrap justify-end items-end gap-4">
+            <div className="flex-grow-0 min-w-[180px]">
+              <input
+                id="nameSearch"
+                type="text"
+                placeholder="Nombre"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                value={nameSearchTerm}
+                onChange={handleNameSearchChange}
+              />
+            </div>
+
+            <div className="flex-grow-0 min-w-[180px]">
+              <input
+                id="otherSearch"
+                type="text"
+                placeholder="Apellido"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                value={otherSearchTerm}
+                onChange={handleOtherSearchChange}
+              />
+            </div>
+
+            <div className="flex-grow-0 min-w-[180px]">
+              <select
+                id="agencyFilter"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                value={selectedAgency}
+                onChange={handleAgencyChange}
+              >
+                <option value="">Todas las agencias</option>
+                {agencies.map(agency => (
+                  <option key={agency} value={agency}>{agency}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-grow-0 min-w-[150px]">
+              <select
+                id="statusFilter"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                value={selectedStatus}
+                onChange={handleStatusChange}
+              >
+                <option value="">Todos los status</option>
+                <option value="SI">SI</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
+
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+              Buscar
+            </button>
+
+            <button
+              onClick={resetFilters}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
+              Resetear filtros
+            </button>
+          </div>
         </div>
 
         {/* Mesa contenedor con altura fija */}
@@ -398,6 +534,186 @@ function rhAdmin() {
             </div>
           </div>
         </div>
+        
+        {/* Modal para agregar empleado */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl overflow-auto max-h-[90vh]">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-6 w-6 text-purple-700" />
+                    <h2 className="text-xl font-semibold text-gray-800">Ingresar Nuevo Empleado</h2>
+                  </div>
+                  <button 
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmitForm}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Nombre */}
+                    <div>
+                      <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.nombre}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+
+                    {/* Apellido */}
+                    <div>
+                      <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">
+                        Apellido
+                      </label>
+                      <input
+                        type="text"
+                        id="apellido"
+                        name="apellido"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.apellido}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+
+                    {/* Agencia */}
+                    <div>
+                      <label htmlFor="agencia" className="block text-sm font-medium text-gray-700 mb-1">
+                        Agencia
+                      </label>
+                      <select
+                        id="agencia"
+                        name="agencia"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.agencia}
+                        onChange={handleFormChange}
+                      >
+                        <option value="">Seleccionar agencia</option>
+                        {AGENCIAS.map((agencia) => (
+                          <option key={agencia} value={agencia}>
+                            {agencia}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Fecha de Nacimiento */}
+                    <div>
+                      <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Nacimiento
+                      </label>
+                      <input
+                        type="date"
+                        id="fechaNacimiento"
+                        name="fechaNacimiento"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.fechaNacimiento}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+
+                    {/* Fecha de Alta */}
+                    <div>
+                      <label htmlFor="fechaAlta" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Alta
+                      </label>
+                      <input
+                        type="date"
+                        id="fechaAlta"
+                        name="fechaAlta"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.fechaAlta}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        id="status"
+                        name="status"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.status}
+                        onChange={handleFormChange}
+                      >
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                      </select>
+                    </div>
+
+                    {/* URL de Foto */}
+                    <div>
+                      <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-1">
+                        URL de Foto (Google Drive)
+                      </label>
+                      <input
+                        type="text"
+                        id="photo"
+                        name="photo"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.photo}
+                        onChange={handleFormChange}
+                        placeholder="https://drive.google.com/file/d/..."
+                      />
+                    </div>
+
+                    {/* ID Usuario */}
+                    <div>
+                      <label htmlFor="idUsuario" className="block text-sm font-medium text-gray-700 mb-1">
+                        ID Usuario
+                      </label>
+                      <input
+                        type="number"
+                        id="idUsuario"
+                        name="idUsuario"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={formData.idUsuario}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-purple-700 text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Ingresar Empleado
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
