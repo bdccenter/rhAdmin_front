@@ -1,7 +1,6 @@
-import { Users, Save, User, X } from 'lucide-react';
+import {  Save, User, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MdLogout } from "react-icons/md";
 import { MdNextPlan } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
@@ -22,6 +21,15 @@ interface Employee {
   id_user: number;
   user_email?: string;
 }
+
+interface NewAdminForm {
+  nombre: string;
+  apellido: string;
+  correo: string;
+  password: string;
+  agencia: string;
+}
+
 
 // Interfaz para empleados con URL de foto procesada
 interface ProcessedEmployee extends Employee {
@@ -83,9 +91,21 @@ function RhAdmin() {
   const { logout } = useAuth();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
+  // estado para controlar el modal de nuevo usuario o administrador
+  const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
+
+  // estados para manejo de usuarios o administradores
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isSuperuser, setIsSuperuser] = useState<boolean>(false);
 
   // Ref para controlar si ya se mostró la notificación
   const notificationShown = useRef(false);
+
+  const [editUserData, setEditUserData] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
@@ -99,6 +119,183 @@ function RhAdmin() {
   const [agencies, setAgencies] = useState<string[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
 
+
+  // Función para abrir el modal de edición
+  const openEditModal = (user: any) => {
+    setEditUserData({
+      id: user.id,
+      nombre: user.name,
+      apellido: user.last_name,
+      correo: user.email,
+      password: '',
+      agencia: user.agency || '',
+      isSuperuser: user.admin === 'Sí'
+    });
+    setShowEditModal(true);
+  };
+
+  // Función para cerrar el modal de edición
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditUserData(null);
+  };
+
+  // Función para guardar los cambios del usuario editado
+  const handleSaveEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await axios.put(`${API_URL}/users/${editUserData.id}`, {
+        name: editUserData.nombre,
+        last_name: editUserData.apellido,
+        email: editUserData.correo,
+        password: editUserData.password, // El backend manejará si está vacío
+        agency: editUserData.agencia,
+        admin: editUserData.isSuperuser
+      });
+
+      showNotification('success', 'Usuario actualizado exitosamente');
+      closeEditModal();
+      fetchUsers(); // Recargar la lista
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Error al actualizar usuario';
+      showNotification('error', errorMessage);
+      console.error('Error al actualizar usuario:', err);
+    }
+  };
+
+  // Función para manejar cambios en el formulario de edición
+  const handleEditDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setEditUserData({
+        ...editUserData,
+        [name]: checked
+      });
+    } else {
+      setEditUserData({
+        ...editUserData,
+        [name]: value
+      });
+    }
+  };
+
+  // Función para cargar usuarios
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const response = await axios.get(`${API_URL}/users`);
+      setUsers(response.data);
+      setLoadingUsers(false);
+    } catch (err) {
+      console.error('Error al cargar usuarios:', err);
+      showNotification('error', 'Error al cargar lista de usuarios');
+      setLoadingUsers(false);
+    }
+  };
+
+  // Función para editar usuario
+  const handleEditUser = (user: any) => {
+    setSelectedUserId(user.id);
+    setIsEditing(true);
+    setAdminFormData({
+      nombre: user.name,
+      apellido: user.last_name,
+      correo: user.email,
+      password: '', // No mostrar la contraseña existente
+      agencia: user.agency || ''
+    });
+    setIsSuperuser(user.admin === 'Sí');
+    setShowAdminModal(true);
+  };
+
+  // Función para eliminar usuario
+  const handleDeleteUser = async (userId: number) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
+      try {
+        await axios.delete(`${API_URL}/users/${userId}`);
+        showNotification('success', 'Usuario eliminado exitosamente');
+        fetchUsers(); // Recargar la lista
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.message || 'Error al eliminar usuario';
+        showNotification('error', errorMessage);
+        console.error('Error al eliminar usuario:', err);
+      }
+    }
+  };
+
+  // Función para crear o actualizar usuario
+  const handleSubmitAdminForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (isEditing && selectedUserId) {
+        // Actualizar usuario existente
+        await axios.put(`${API_URL}/users/${selectedUserId}`, {
+          name: adminFormData.nombre,
+          last_name: adminFormData.apellido,
+          email: adminFormData.correo,
+          password: adminFormData.password, // El backend manejará si está vacío
+          agency: adminFormData.agencia,
+          admin: isSuperuser
+        });
+
+        showNotification('success', 'Usuario actualizado exitosamente');
+      } else {
+        // Crear nuevo usuario
+        await axios.post(`${API_URL}/users`, {
+          name: adminFormData.nombre,
+          last_name: adminFormData.apellido,
+          email: adminFormData.correo,
+          password: adminFormData.password,
+          agency: adminFormData.agencia,
+          admin: isSuperuser
+        });
+
+        showNotification('success', 'Usuario creado exitosamente');
+      }
+
+      closeAdminModal();
+      fetchUsers(); // Recargar la lista
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Error al procesar solicitud';
+      showNotification('error', errorMessage);
+      console.error('Error:', err);
+    }
+  };
+
+  // Función para abrir el modal en modo creación
+  const openAdminModal = () => {
+    setSelectedUserId(null);
+    setIsEditing(false);
+    setAdminFormData({
+      nombre: '',
+      apellido: '',
+      correo: '',
+      password: '',
+      agencia: ''
+    });
+    setIsSuperuser(false);
+    setShowAdminModal(true);
+  };
+
+  // Modificar closeAdminModal para resetear todo
+  const closeAdminModal = () => {
+    setShowAdminModal(false);
+    setSelectedUserId(null);
+    setIsEditing(false);
+    setAdminFormData({
+      nombre: '',
+      apellido: '',
+      correo: '',
+      password: '',
+      agencia: ''
+    });
+    setIsSuperuser(false);
+  };
+
   // Estado para el formulario de nuevo empleado
   const [formData, setFormData] = useState<NewEmployeeForm>({
     nombre: '',
@@ -110,6 +307,32 @@ function RhAdmin() {
     photo: '',
     idUsuario: ''
   });
+
+  const [adminFormData, setAdminFormData] = useState<NewAdminForm>({
+    nombre: '',
+    apellido: '',
+    correo: '',
+    password: '',
+    agencia: ''
+  });
+
+
+  // Maneja cambios en el formulario de nuevo administrador
+  const handleAdminFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setAdminFormData({
+      ...adminFormData,
+      [name]: value
+    });
+  };
+
+
+  // Cargar usuarios cuando se abre el modal de administrador
+  useEffect(() => {
+    if (showAdminModal) {
+      fetchUsers();
+    }
+  }, [showAdminModal]);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -299,13 +522,20 @@ function RhAdmin() {
       <div className="bg-purple-700 text-white p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Users className="h-6 w-6" />
+            <img
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFRUlEQVR4nO2YfWgbZRzHT5j4x0QQNsE/5v7TPyb6x5jgdreKII6BIGIaS7o4cLNO7cS9JFMqnQwtOBE3usrd1rkVqjSXviRp09ZmS5vLpSZNX7DrwPfeXbK2s6us3ZhdO37yXFq9tcm95ZqmSb7whXB5eZ7v537P77knGFZQQQWtuvo8u7GoW8CiHlhZuwWsv3UXlnWKZiL8f+awrFM0Y+ETzjpFCwBgTVSA2WzeZDZZnOZiy7S5uBS0WHMFeGqNsVEAzCh8cekNrcFzB4AJ3Xl94XUByLYlYNZR9jkGoFR3+NxYAsX/hwHGdnuuxy7E3YfZi1Vl7MG33xSslj23LSV7Zt+yWqc+fn/vz7UnynrZ8wf9Y22HQne7j/6eWwCCds3OmSVQvs8az1sA5fus8anOI9GMAMiGJQCtr22GNpMPvKZZPaHXPoA2MTyIThJqqgoTreb6mlwC0GaayXMAr3fJAcj5JgioB3hNPyR6gC0NALaZNf+HCARtI2lUwBXZH0d/U0U9fEbCRz0v6wVQrRsAYzuNpas+z7fLAqFrmRIEjjwDjO2ejvD3gLFtSXsCQ53rsT7PiCT8iHgtkwLGXqNj/VcbNoGwawvW574lGr3OtMBb/hAwtkvq777dh75j6CSirr2iV0vgr1wHjO0LYBTKHvUMo8Nnk6CjBOByGUDgQwDmaMI96LXtNLAfPY3luqB94QFpibF8EQQOA/j2A3RYANrNCXdachsAQY4+vpPkPiBIPjrP2MeXrv155tgYem8HxVmLKmEdlgt6qW5sPX5WKMVJrgMnuXmC4gGZ7ajuXgog1FHjX3wfp/g/cYo79NypXx5Jdw4OR/NWJ93COGnXLO1omQyxEdDpuVAw4gsEBjYqDlpExjfgFP81QXLTi6GkfpEanUUQUCUgo9foWpLP3iQo/qvnz/2xWV9470ba4Zp00i5AbnJ6BtMAkHAwckJ2UIIc3U5Q3ESy4HqNU/w/BMkdxwAe0AKAplv2L4ZHdrm8PQYAOJVywB3fCM/iJHfLyPBLXKMRQI0UQLvXlzaA3mD4QNLBtpLRBwmSv7KC4Ret+kTmpFu6pQB8XT1DaVdAKFKUdDD8rFCagfCAGqoGANelAJhAbzpNUHTKJohTfGsmABAUfxev4R5VCt/Y2PiYNHyaO8Di+p9IOSBO8uPSiT7x6YDoFakCii9RAkDTzS9IAcjtAEODwyDEYiDE4jA4+FNKACwb9ssA4Oa1Ath9Qfluo4ej5QC4emUALe9JAbhd7SkbIAp+bWxctCDEZSognPp4TiyZpBKA/t/GxAFfqRMUAHBly/sA/zdqugoAzqjdAdQCYNnIu4YB8F+9Jg54oCkmC6CoeuLhZA9UOMkn78YLcjpcfrU7ACp7BAGFHxwY1r4D6AFQF05Q/6xLHoD42yRHJVkGX2LZsgPoAfC5LwHg4o9xRQA7SX7b8grgfsVSqL7evcHoHYBlw3+lGk+Uli6ODj93mE/gzlAt9A5fVQSAhFN8f6rfAsY+DUFbEwSOPYk+63C4i9TuABoA+OUBkMkPPiknveC50HF448KwIgCC4t6RhpIzTbt61O4A6p8BwmfkAVBcsx4AyJe9lCIAdDRWDcBxPwAjzgCyOwDS9nOxpwiKn9ID4GZ3pSIApO8cnhsqIQzetwP4AgYsgcg2TEnE+dgmguIdC+d41QCQ1QBodLh2fU+7r6uogEnjdoDwTCgYqVIM31DxKuSDCwBSqSEL7k6hAipWcQlIddKKQy4Z06qT+Q6gIR/LXqrVnnABQEWhAqCwBCpWsQcUVBCWF/oXOUVPm0BC6i0AAAAASUVORK5CYII=" alt="external-blogger-blogger-and-influencer-itim2101-flat-itim2101-1"
+              className="h-6 w-6"
+            />
             <h1 className="text-xl font-semibold">Panel Admin - Empleados</h1>
+
           </div>
           <button
             onClick={handleLogout}
             className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
-            <MdLogout className="text-lg" />
+            <img
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADYUlEQVR4nO3Z329URRTA8f0j1PcmPhnu7cqPxOgLgooJiU/yZngm8QcUrA2hDVs0DabGEBIIO5dWDAVrDEKCSbfdlm53KbQIkQYNPwShtNSF0rQWWwrdOV9zuWgvVp46p8FkTzKvs+dz58zc2XMTiXKUoxzleKYj2cTznrH7/MAOecaW/EBY6Hg0j7E3/cCmfUOFWvK+YZUX2Nsukn7qMHbSS/OG8+SXpXnON7aomnzweEUCO+rv5QWngKhsoh94vUX4egDyNyB3HTp/g8xV+OEyHL0I3/0C31wQDg4IzT8J5qyw54ywq09o7BUa8kJ9TqjtEj7pEKoywvrvhRXNT5TVXqeAqEajyQ9dgDPDcHoICoPuEO8dja+EHXQKiG/Y8yNwbkQHkZwro2mngHiN/nwbBn7XQbzTKlQGdtYztkENcHEUVURVm005Tf7fgCt3UUVUtysDro2hhqjOCmtbaX8p4EU1wPVx1BCvHvjnhTbmpVmqAhicQA3x2t8A14g4YPgP1BB13cLL++20c0QcMHIPVcSmjN3nG3s39lYeT6ZZ4QxQ/BNdRL9NVRqSThFxwOgUqoj0j9Ex6hQRB4xNMw9xehi+7IPGU/D5KdjZCw0n4bMC7ChAfR6290BdDrZ1w9YTUNMF1Z2wOQubOuCjduGDNmHdEbKeoebRSLPbC+zUgvdEHDB+n3mItw7rX7P9OcS1BQEmZpiHWPN/Akw+YB7iXBEa++DTgrCjINQXhFRe2N4j1PUItTlhW7ew9YRQE955uoSPO4UtWaEqK2zsED7MCO+3Ce8esSf9wO6MBl/5xt53WkL3HvCfCIcbO6W6iaceooo4fhndY3R6FlXEF70ovMiM/TWcbO23wkwJNcTBAVjWpHGVMFTU5smEyTwsoYZY1aJ0mQtj1pIqWZi1eojVLUrJxwGaiONXYEObwh8az1D9ygE72XQ+Amgi+oeiY9Rp+IGdCZd2ebNQEmXELRXA3OayIUAJUZcTkvsV2irxxlaYsAbi0h1Y2qTV2Iq1FsM6DQGuEccuEe+N3nALCHv3jyd/u1XovxUl7AJxcyI6fVYfeqI3usctwFAR9u4X6bpcDNv5CdexJODNRfjAUawMWJnQivDJhL37sP3t9BNTYAfDslF58uUoRznKkVis+Au1mxEyMIWnXQAAAABJRU5ErkJggg==" alt="exit"
+              className="h-6 w-6"
+            />
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -324,9 +554,21 @@ function RhAdmin() {
             <img
               src="data:image/png;base64,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"
               alt="user-group-man-woman"
-              className="h-5 w-5" 
+              className="h-5 w-5"
             />
             <span>Agregar Empleado</span>
+          </button>
+
+          <button
+            onClick={openAdminModal}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center space-x-2"
+          >
+            <img
+              src="data:image/png;base64,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"
+              alt="external-administrator-internet-of-things-itim2101-lineal-color-itim2101"
+              className="h-5 w-5"
+            />
+            <span>Agregar Administrador</span>
           </button>
 
           {/* Filtros */}
@@ -707,6 +949,377 @@ function RhAdmin() {
                     >
                       <Save className="h-4 w-4 mr-2" />
                       Ingresar Empleado
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Modal para agregar administrador */}
+        {/* Modal para gestión de administradores */}
+        {showAdminModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl overflow-auto max-h-[90vh]">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-2">
+                    <img
+                      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC0klEQVR4nO2YzWsTURDAf0aiUmPBXoRcBEFEBG1Fz1KPClahPaj/gYofKMavgvTQIvhfaKOpJ3tT0IOfZw9qrbkqVtQq8RNKKgMTGB67yb7dyO5ifjCwZGfem8nOezPvQY8ePbpFERgDqsAc8F1Fnqf1nehkkkPAW2C5g4jOQTJEAbgWwXFXptQ2dVznPwCXgB3AWpVB4LK+c4NIPW2sQ7eBUhv9dUDNsRkhJVY5OS/Or4hgJzozxm4+rYU95qRNu38+6EssGPtRUqBqHJCc9+WKsb9JCrwxDmyPYT9o7OdIgYZxwCd9WpSMfYMcBtBv7L+RArlPoWnjgBQpX8aN/Q0ysI3K1uiTPh/T3kaLTiGreRSyO1koZGhXaduCmQ5fot9xvgkcIGWmnCAWtEgN6e5U0udxJ21EJskAhYAgOklTnc9EO91iRPO5k/PzWUibMIq6o0hv81qLncgr3SpHs3yk7Ab3gB8q8pwrBoAlk2ryvJ4ccS5gvZwhJ+zVtHEDkCuZ4W5N0gdMAHXnU0eRZ6ZKX9XD0EnghBa2duMtqc5xtanqGN7OP49xddKSPTrOzhjBL4cEJWNFZiLBZC/NOPYwn1RqPgHUjeFFvZGIw2wXA5j1mdh+9rjOC6uBJyEO/QHOA2WViv4WpPtIx4pM0xgn7V92hThVCdCthOhKc+jFojHeRHK+BDhVDtArB+h9ijPhQ2cNJGUxQQCf40x42Awgk29O4PxujxS6EKLrtYUKK51biHrMVJKF97TNIq5EXMSPfRcxenVi74K+Akc9F3Vq22iLfU4QIi80kCiXW6kVMss2J51a8hO4qxe9+4EtwAZgjbHtZisxRAL6dIEFbYdhzVwhoJmTBq0WoZm7BRxL0syFIQeOU9ro2WIXJOJsGMPaOrs2DdMI/nM2AkeA68ADPQe/B34Bv4F3wNY29mcDAjhNjhjI+5FSuJ/nQz3/LX8BvFAIC9QGmDYAAAAASUVORK5CYII=" alt="system-administrator-male"
+                      className="h-5 w-5"
+                    />
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {isEditing ? 'Editar Usuario' : 'Panel Administrativo de Usuarios'}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={closeAdminModal}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {/* Panel de listado de usuarios */}
+                {!isEditing && (
+                  <div className="mb-8">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-purple-700 text-white">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Admin</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Agencia</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {loadingUsers ? (
+                            <tr>
+                              <td colSpan={7} className="px-6 py-4 text-center">
+                                <div className="flex justify-center">
+                                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-700"></div>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : users.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                                No hay usuarios registrados
+                              </td>
+                            </tr>
+                          ) : (
+                            users.map((user) => (
+                              <tr key={user.id} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.admin === 'Sí' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    {user.admin}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{`${user.name} ${user.last_name}`}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.agency || '-'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                  <button
+                                    onClick={() => openEditModal(user)}
+                                    className="text-white bg-purple-600 hover:bg-purple-700 py-1 px-3 rounded-md text-xs"
+                                  >
+                                    Editar
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteUser(user.id)}
+                                    className="text-white bg-red-600 hover:bg-red-700 py-1 px-3 rounded-md text-xs"
+                                  >
+                                    Eliminar
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Formulario */}
+                <div className="bg-gray-50 p-6 rounded-md">
+                  <h3 className="text-lg font-medium mb-4">{isEditing ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h3>
+
+                  <form onSubmit={handleSubmitAdminForm}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Nombre */}
+                      <div>
+                        <label htmlFor="adminNombre" className="block text-sm font-medium text-gray-700 mb-1">
+                          Nombre
+                        </label>
+                        <input
+                          type="text"
+                          id="adminNombre"
+                          name="nombre"
+                          required
+                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={adminFormData.nombre}
+                          onChange={handleAdminFormChange}
+                        />
+                      </div>
+
+                      {/* Apellido */}
+                      <div>
+                        <label htmlFor="adminApellido" className="block text-sm font-medium text-gray-700 mb-1">
+                          Apellido
+                        </label>
+                        <input
+                          type="text"
+                          id="adminApellido"
+                          name="apellido"
+                          required
+                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={adminFormData.apellido}
+                          onChange={handleAdminFormChange}
+                        />
+                      </div>
+
+                      {/* Correo */}
+                      <div>
+                        <label htmlFor="adminCorreo" className="block text-sm font-medium text-gray-700 mb-1">
+                          Correo Electrónico
+                        </label>
+                        <input
+                          type="email"
+                          id="adminCorreo"
+                          name="correo"
+                          required
+                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={adminFormData.correo}
+                          onChange={handleAdminFormChange}
+                        />
+                      </div>
+
+                      {/* Contraseña */}
+                      <div>
+                        <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                          {isEditing ? 'Nueva Contraseña (dejar en blanco para mantener)' : 'Contraseña'}
+                        </label>
+                        <input
+                          type="password"
+                          id="adminPassword"
+                          name="password"
+                          required={!isEditing}
+                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={adminFormData.password}
+                          onChange={handleAdminFormChange}
+                        />
+                      </div>
+
+                      {/* Agencia */}
+                      <div>
+                        <label htmlFor="adminAgencia" className="block text-sm font-medium text-gray-700 mb-1">
+                          Agencia
+                        </label>
+                        <select
+                          id="adminAgencia"
+                          name="agencia"
+                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={adminFormData.agencia}
+                          onChange={handleAdminFormChange}
+                        >
+                          <option value="">Seleccionar agencia</option>
+                          {AGENCIAS.map((agencia) => (
+                            <option key={agencia} value={agencia}>
+                              {agencia}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end space-x-3">
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => setIsEditing(false)}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                          Volver a la Lista
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={closeAdminModal}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancelar
+                      </button>
+
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        {isEditing ? 'Actualizar Usuario' : 'Registrar Usuario'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {showEditModal && editUserData && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-lg overflow-auto max-h-[90vh]">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-6 w-6 text-purple-700" />
+                    <h2 className="text-xl font-semibold text-gray-800">Editar Usuario</h2>
+                  </div>
+                  <button
+                    onClick={closeEditModal}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveEditUser}>
+                  <div className="space-y-4">
+                    {/* ID (no editable) */}
+                    <div>
+                      <label htmlFor="editId" className="block text-sm font-medium text-gray-700 mb-1">
+                        ID
+                      </label>
+                      <input
+                        type="text"
+                        id="editId"
+                        value={editUserData.id}
+                        disabled
+                        className="w-full px-3 py-2 border bg-gray-100 rounded-md text-sm"
+                      />
+                    </div>
+
+                    {/* Nombre */}
+                    <div>
+                      <label htmlFor="editNombre" className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        id="editNombre"
+                        name="nombre"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editUserData.nombre}
+                        onChange={handleEditDataChange}
+                      />
+                    </div>
+
+                    {/* Apellido */}
+                    <div>
+                      <label htmlFor="editApellido" className="block text-sm font-medium text-gray-700 mb-1">
+                        Apellido
+                      </label>
+                      <input
+                        type="text"
+                        id="editApellido"
+                        name="apellido"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editUserData.apellido}
+                        onChange={handleEditDataChange}
+                      />
+                    </div>
+
+                    {/* Correo */}
+                    <div>
+                      <label htmlFor="editCorreo" className="block text-sm font-medium text-gray-700 mb-1">
+                        Correo Electrónico
+                      </label>
+                      <input
+                        type="email"
+                        id="editCorreo"
+                        name="correo"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editUserData.correo}
+                        onChange={handleEditDataChange}
+                      />
+                    </div>
+
+                    {/* Contraseña */}
+                    <div>
+                      <label htmlFor="editPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                        Nueva Contraseña (dejar en blanco para mantener)
+                      </label>
+                      <input
+                        type="password"
+                        id="editPassword"
+                        name="password"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editUserData.password}
+                        onChange={handleEditDataChange}
+                        placeholder="Nueva contraseña"
+                      />
+                    </div>
+
+                    {/* Agencia */}
+                    <div>
+                      <label htmlFor="editAgencia" className="block text-sm font-medium text-gray-700 mb-1">
+                        Agencia
+                      </label>
+                      <select
+                        id="editAgencia"
+                        name="agencia"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editUserData.agencia}
+                        onChange={handleEditDataChange}
+                      >
+                        <option value="">Seleccionar agencia</option>
+                        {AGENCIAS.map((agencia) => (
+                          <option key={agencia} value={agencia}>
+                            {agencia}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeEditModal}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Actualizar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
+                          handleDeleteUser(editUserData.id);
+                          closeEditModal();
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center"
+                    >
+                      Eliminar
                     </button>
                   </div>
                 </form>
