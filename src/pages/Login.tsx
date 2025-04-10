@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
+    const { showNotification } = useNotification();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -16,12 +18,15 @@ const Login = () => {
         try {
             const success = await login(email, password);
             if (success) {
+                // Ahora la notificación de éxito se muestra desde el componente rhAdmin
                 navigate('/admin');
             } else {
                 setError('Credenciales incorrectas. Inténtalo de nuevo.');
+                showNotification('error', 'Credenciales incorrectas. Inténtalo de nuevo.');
             }
         } catch (err) {
             setError('Error al iniciar sesión. Por favor, inténtalo más tarde.');
+            showNotification('error', 'Error al iniciar sesión. Por favor, inténtalo más tarde.');
             console.error('Error de inicio de sesión:', err);
         }
     };

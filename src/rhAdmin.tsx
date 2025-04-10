@@ -1,7 +1,12 @@
-import { Users, ChevronLeft, ChevronRight, Save, User, X, Plus } from 'lucide-react';
+import { Users, Save, User, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MdLogout } from "react-icons/md";
+import { RiUserAddLine } from "react-icons/ri";
+import { IoIosSearch } from "react-icons/io";
+import { BsBootstrapReboot } from "react-icons/bs";
+import { MdNextPlan } from "react-icons/md";
+
 
 // Definimos la interfaz para los datos de empleados que recibiremos de la API
 interface Employee {
@@ -222,42 +227,10 @@ function rhAdmin() {
   // Maneja el envío del formulario de nuevo empleado
   const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Aquí se implementaría la lógica para enviar los datos al servidor
       console.log('Datos a enviar:', formData);
-      
-      // Ejemplo de cómo se podría implementar la llamada a la API
-      /*
-      const response = await axios.post(`${API_URL}/employees`, {
-        name: formData.nombre,
-        last_name: formData.apellido,
-        agency: formData.agencia,
-        date_of_birth: formData.fechaNacimiento,
-        high_date: formData.fechaAlta,
-        status: formData.status,
-        photo: formData.photo,
-        id_user: parseInt(formData.idUsuario)
-      });
-      
-      if (response.status === 201) {
-        // Recargar la lista de empleados después de una creación exitosa
-        fetchEmployees();
-        // Cerrar el modal y limpiar el formulario
-        setShowModal(false);
-        setFormData({
-          nombre: '',
-          apellido: '',
-          agencia: '',
-          fechaNacimiento: '',
-          fechaAlta: '',
-          status: 'SI',
-          photo: '',
-          idUsuario: ''
-        });
-      }
-      */
-      
       // Por ahora, solo reseteamos el formulario y cerramos el modal
       setFormData({
         nombre: '',
@@ -270,7 +243,7 @@ function rhAdmin() {
         idUsuario: ''
       });
       setShowModal(false);
-      
+
     } catch (err) {
       console.error('Error al crear nuevo empleado:', err);
       // Aquí se manejaría el error, posiblemente mostrando un mensaje al usuario
@@ -317,11 +290,11 @@ function rhAdmin() {
       <div className="container mx-auto py-6 px-4">
         <div className="flex justify-between items-center mb-6">
           {/* Botón de Agregar Empleado */}
-          <button 
+          <button
             onClick={openModal}
             className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center space-x-2"
           >
-            <Plus className="h-5 w-5" />
+            <RiUserAddLine className="h-5 w-5" />
             <span>Agregar Empleado</span>
           </button>
 
@@ -376,14 +349,16 @@ function rhAdmin() {
               </select>
             </div>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-              Buscar
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm flex items-center space-x-2">
+              <IoIosSearch className="h-5 w-5" />
+              <span>Buscar</span>
             </button>
 
             <button
               onClick={resetFilters}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
-              Resetear filtros
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm flex items-center space-x-2">
+              <BsBootstrapReboot className="h-5 w-5" />
+              <span>Resetear filtros</span>
             </button>
           </div>
         </div>
@@ -514,7 +489,7 @@ function rhAdmin() {
                 className={`flex items-center px-4 py-2 border rounded-md ${currentPage === 1 || loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'
                   }`}
               >
-                <ChevronLeft className="h-4 w-4 mr-1" />
+                <MdNextPlan className="h-5 w-5 mr-1 transform scale-x-[-1]" />
                 <span>Anterior</span>
               </button>
 
@@ -529,12 +504,12 @@ function rhAdmin() {
                   }`}
               >
                 <span>Siguiente</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <MdNextPlan className="h-5 w-5 ml-1" />
               </button>
             </div>
           </div>
         </div>
-        
+
         {/* Modal para agregar empleado */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -545,7 +520,7 @@ function rhAdmin() {
                     <User className="h-6 w-6 text-purple-700" />
                     <h2 className="text-xl font-semibold text-gray-800">Ingresar Nuevo Empleado</h2>
                   </div>
-                  <button 
+                  <button
                     onClick={closeModal}
                     className="text-gray-500 hover:text-gray-700"
                   >
@@ -674,21 +649,7 @@ function rhAdmin() {
                       />
                     </div>
 
-                    {/* ID Usuario */}
-                    <div>
-                      <label htmlFor="idUsuario" className="block text-sm font-medium text-gray-700 mb-1">
-                        ID Usuario
-                      </label>
-                      <input
-                        type="number"
-                        id="idUsuario"
-                        name="idUsuario"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.idUsuario}
-                        onChange={handleFormChange}
-                      />
-                    </div>
+
                   </div>
 
                   <div className="mt-6 flex justify-end space-x-3">
