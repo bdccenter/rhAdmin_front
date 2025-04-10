@@ -1,5 +1,5 @@
 // src/context/NotificationContext.tsx
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback } from 'react';
 import Notification from '../components/Notification';
 
 interface NotificationContextType {
@@ -23,20 +23,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     isVisible: false,
   });
 
-  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
+  // Usar useCallback para evitar recrear la función en cada renderizado
+  const showNotification = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     setNotification({
       type,
       message,
       isVisible: true,
     });
-  };
+  }, []);
 
-  const hideNotification = () => {
+  const hideNotification = useCallback(() => {
     setNotification(prev => ({
       ...prev,
       isVisible: false,
     }));
-  };
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ showNotification }}>

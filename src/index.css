@@ -2,33 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Agregar estas animaciones a tu archivo index.css */
+/* Añade estas animaciones para las notificaciones a tu archivo index.css */
 
 @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translate3d(0, -20px, 0);
-    }
-    to {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
   }
-  
-  @keyframes fadeOutUp {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-      transform: translate3d(0, -20px, 0);
-    }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
-  
-  .animate-fade-in-down {
-    animation: fadeInDown 0.3s ease-out forwards;
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
-  
-  .animate-fade-out-up {
-    animation: fadeOutUp 0.3s ease-in forwards;
+  to {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
   }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.3s ease-out forwards;
+}
+
+.animate-fade-out-up {
+  animation: fadeOutUp 0.3s ease-in forwards;
+}

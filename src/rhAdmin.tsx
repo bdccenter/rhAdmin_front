@@ -1,11 +1,12 @@
 import { Users, Save, User, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { MdLogout } from "react-icons/md";
 import { RiUserAddLine } from "react-icons/ri";
-import { IoIosSearch } from "react-icons/io";
-import { BsBootstrapReboot } from "react-icons/bs";
 import { MdNextPlan } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { useNotification } from './context/NotificationContext';
 
 
 // Definimos la interfaz para los datos de empleados que recibiremos de la API
@@ -78,7 +79,15 @@ const convertGoogleDriveUrl = (url: string): string => {
   return url;
 };
 
-function rhAdmin() {
+function RhAdmin() {
+  // Auth Context para funcionalidad de logout
+  const { logout } = useAuth();
+  const { showNotification } = useNotification();
+  const navigate = useNavigate();
+
+  // Ref para controlar si ya se mostró la notificación
+  const notificationShown = useRef(false);
+
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
   const [employeesData, setEmployeesData] = useState<ProcessedEmployee[]>([]);
@@ -106,6 +115,20 @@ function rhAdmin() {
   // Paginación
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 100; // 100 registros por página
+
+  // Mostrar notificación de inicio de sesión exitoso SOLO UNA VEZ
+  useEffect(() => {
+    if (!notificationShown.current) {
+      showNotification('success', 'Inicio de sesión exitoso');
+      notificationShown.current = true;
+    }
+  }, [showNotification]);
+
+  // Función para manejar el cierre de sesión
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // Función para resetear todos los filtros
   const resetFilters = () => {
@@ -231,6 +254,7 @@ function rhAdmin() {
     try {
       // Aquí se implementaría la lógica para enviar los datos al servidor
       console.log('Datos a enviar:', formData);
+
       // Por ahora, solo reseteamos el formulario y cerramos el modal
       setFormData({
         nombre: '',
@@ -279,7 +303,9 @@ function rhAdmin() {
             <Users className="h-6 w-6" />
             <h1 className="text-xl font-semibold">Panel Admin - Empleados</h1>
           </div>
-          <button className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
             <MdLogout className="text-lg" />
             <span>Cerrar sesión</span>
           </button>
@@ -350,14 +376,22 @@ function rhAdmin() {
             </div>
 
             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm flex items-center space-x-2">
-              <IoIosSearch className="h-5 w-5" />
+              <img
+                src="https://img.icons8.com/fluency/48/search.png"
+                alt="icono de búsqueda"
+                className="h-5 w-5"
+              />
               <span>Buscar</span>
             </button>
 
             <button
               onClick={resetFilters}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm flex items-center space-x-2">
-              <BsBootstrapReboot className="h-5 w-5" />
+              <img
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFe0lEQVR4nO2YbUwbdRzHT6KLyxbNmIw9wD2U8tjnkilqjMa3e7XEGHyhr0x8YTSZc4liFoxmzKcYdRo2lmXZXe9K2xW2AqUPh4vb9NWW6Ea2TBNg5X/Xa/u/q09hZcL+5lrKSqEU2gJpwjf5BF7w/9/nd/f//XoUwzazmc0Un05UYb0E26y80mHlFbeVj49aeUWx8Mp964iSsPJKxBKMj5p5xWEOKh9af/yzFUPokeW23NMzfnB3z8RtbC1juARrLHz8uHUkDqwjcWTl48iyJMpDginMQSVkCcif6HmpOnvf6lMTB6pPjSf2nBpHayK+P/jXTmsw3m3hlemcsnOiGcKLCajICXNA+bo1qDyp7v3Ud3cOVJ8cS+w+OYZ2r0UBFl5uN/MKzCVqySmaG5OKT5Hqzv3xaeXx64mqb2+jZAEnx0pXwIuX0KPmoNJdtKg/jbwYH0TEmTuosus6qvrmVukKaPsltNUckAeWkzUF5BlzQL5sDsiHDQHYZvT/s6v1GnpMXWvi4T6TX37e6JMPm3zQZ/TDmZSwnMSYhYYZQzu6riWLKM2dV+Vz3FWjX5ky+pTPjf7wrpXuaQnE9hqG4XGDT56aFx9eSB0zniyi6AJMfqU75+P3yS6dT64tdG/DcOxtVdaQBD7EmwI/fae4Aox+uX3Js+qHs4Zh2JFvli8XvRce1A/F7qdll0LvhaioUWn0Qbj4nMJZo1duL3jjHPL6oaUp+CIGH+zObq7U44YdWJHRDcHbuYT1aQZjSDcQ/a0weS+sMQ7D6ezG0g/HXMUcm3WLQZ0QWU2l98KpYhp2/dKJKgxDsdCiphqCn2HlEIMXtqndn3kedUOxmdXM+Q2NbhB+lN1QugH4E1Yu0Q1G+5ITIIMWT/Q9rFyiG4yOzssPpGi6CNuwconOE5VV6ZYMtF6xCiuXNHui0y0e9dhk4ERbNsJF0yv+rOkVURqKE6/mXdTsiUy3eKLquUfNF1NsWAF28YrGLiIVyi4ikhUv513UdDEip8XTGN1lMkLVNPVHR5svRJFKU5o+6VmsXNLYH3XPi/dHkjT2R95fbw8NF36Z4sRfSVY8Q7CgXetc4SBp7Jc60uJz8qixX7qCrXNIVnyL4tTGFRDFCohghfs4K7bmXVh/IfxMY18ELUSa0WxAH5D0pIlkwRHCBgKkDdzC6TCVf1Unqmh0R0Jp+QZ3GukLrFzS4Ja6GtwSyuKexinga33tajq8jeLAGMmCqxQj7i9ok3on3NfgkhIN5yVUn4HWFe5b639oqunwNoIFEyQrINIGZklGOKtl4BOr3qj+vPRDUty1EK1LOoqtcaqcke04A7pwm3CPYASEM8Kbq96kqQ/s1Lqk2Jy0eveR1hlGWof4oN4hvVZqacI++RLFgh4N/XBY4OxdDc6E3lELKmjTOkf41aR0Ng7xgdYhHi3lcSJY0KMeG4IFNzOLKDpap/h9nSOMlqQ33FdMY7c4I9tV1N9VacIGbhI2Aak/a5yhypIUoH61qHGIngzpeebeEu9peoUvKW7x9/y5ov4tyYnHSE74m+KEiQVFMOAmwQBUS0++gZUqNc7QVo1d9GS+2iaxZyLMqq+7Gnv4SJ0dPKdKtjhHt6hra5yhfZRdeIHixEMUJ/pIVvgv+QnLpT5lSRZ0zV/rdKgSPzf5OnF2/HGslEk+CU48sVA69ZqbhFuOtOjSEDYhgbOSBluPUJz4CskJkZyieWRT830xuE14F1uv4OzdHSQHTpA2IUGuUpbIhgH/4rTwVcGjspjUcnf3kjZwjLAJobyiSdk0ABE0+J1gJj8u6cgsOJ2ogmJDTxOM8AFhE1wELdwgaEHGaTBN0GCKoIFA0OAGTgO2lp48tKLX4s1sZjPYSvI/ZkYDkohpw24AAAAASUVORK5CYII="
+                alt="icono de resetear filtros"
+                className="h-5 w-5"
+              />
               <span>Resetear filtros</span>
             </button>
           </div>
@@ -680,4 +714,4 @@ function rhAdmin() {
   );
 }
 
-export default rhAdmin;
+export default RhAdmin;

@@ -1,5 +1,5 @@
 // src/components/Notification.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 interface NotificationProps {
@@ -17,6 +17,9 @@ const Notification: React.FC<NotificationProps> = ({
   onClose,
   autoCloseTime = 3000,
 }) => {
+  // Estado para controlar la animación de salida
+  const [isLeaving, setIsLeaving] = useState(false);
+
   // Configuración según el tipo
   const config = {
     success: {
@@ -36,29 +39,39 @@ const Notification: React.FC<NotificationProps> = ({
     },
   };
 
+  // Función para manejar el cierre con animación
+  const handleClose = () => {
+    setIsLeaving(true);
+    // Retraso antes de llamar a onClose para permitir que la animación termine
+    setTimeout(() => {
+      onClose();
+      setIsLeaving(false);
+    }, 300); // 300ms es la duración de la animación
+  };
+
   // Cerrar automáticamente después de un tiempo
   useEffect(() => {
     if (isVisible && autoCloseTime > 0) {
       const timer = setTimeout(() => {
-        onClose();
+        handleClose();
       }, autoCloseTime);
-      
+
       return () => clearTimeout(timer);
     }
-  }, [isVisible, onClose, autoCloseTime]);
+  }, [isVisible, autoCloseTime]);
 
   if (!isVisible) return null;
 
   const { bg, icon, textColor } = config[type];
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
+    <div className={`fixed top-4 right-4 z-50 ${isLeaving ? 'animate-fade-out-up' : 'animate-fade-in-down'}`}>
       <div className={`${bg} shadow-lg rounded-lg p-4 max-w-md`}>
         <div className="flex items-center space-x-3">
           {icon}
           <div className={`flex-1 ${textColor}`}>{message}</div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={handleClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
