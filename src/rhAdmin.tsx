@@ -105,7 +105,11 @@ function RhAdmin() {
   const notificationShown = useRef(false);
 
   const [editUserData, setEditUserData] = useState<any>(null);
+  const [editEmployeeData, setEditEmployeeData] = useState<ProcessedEmployee | null>(null);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  // Agregar este nuevo estado
+  const [showEditEmployeeModal, setShowEditEmployeeModal] = useState<boolean>(false);
+
 
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
@@ -119,6 +123,77 @@ function RhAdmin() {
   const [agencies, setAgencies] = useState<string[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
 
+
+
+  const openEditEmployeeModal = (employee: ProcessedEmployee) => {
+    // Formatear las fechas para el input date (YYYY-MM-DD)
+    const formatDateForInput = (dateStr: string) => {
+      if (!dateStr) return '';
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return '';
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    };
+
+    setEditEmployeeData({
+      ...employee,
+      date_of_birth: formatDateForInput(employee.date_of_birth),
+      high_date: formatDateForInput(employee.high_date),
+      low_date: employee.low_date ? formatDateForInput(employee.low_date) : null
+    });
+    setShowEditEmployeeModal(true);
+  };
+
+  // 3. Función para cerrar el modal de edición
+  const closeEditEmployeeModal = () => {
+    setShowEditEmployeeModal(false);
+    setEditEmployeeData(null);
+  };
+
+  // 4. Función para manejar cambios en el formulario de edición
+  const handleEditEmployeeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    if (editEmployeeData) {
+      setEditEmployeeData({
+        ...editEmployeeData,
+        [name]: value
+      });
+    }
+  };
+
+  // 5. Función para guardar los cambios del empleado
+  const handleSaveEditEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editEmployeeData) return;
+
+    try {
+      // Preparar datos para envío a la API
+      const apiData = {
+        name: editEmployeeData.name,
+        last_name: editEmployeeData.last_name,
+        agency: editEmployeeData.agency,
+        date_of_birth: editEmployeeData.date_of_birth,
+        high_date: editEmployeeData.high_date,
+        status: editEmployeeData.status,
+        photo: editEmployeeData.photo,
+        id_user: editEmployeeData.id_user
+      };
+
+      // Llamada a la API para actualizar el empleado
+      const response = await axios.put(`${API_URL}/employees/${editEmployeeData.id}`, apiData);
+
+      if (response.data.success) {
+        showNotification('success', 'Empleado actualizado exitosamente');
+        closeEditEmployeeModal();
+        fetchEmployees(); // Recargar la lista de empleados
+      }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Error al actualizar empleado';
+      showNotification('error', errorMessage);
+      console.error('Error al actualizar empleado:', err);
+    }
+  };
 
   // Función para abrir el modal de edición
   const openEditModal = (user: any) => {
@@ -699,52 +774,63 @@ function RhAdmin() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                       id_Usuario
                     </th>
+                    {/* Agrega esta nueva columna */}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentEmployees.length === 0 ? (
-                    <tr>
-                      <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
-                        No se encontraron empleados con los filtros aplicados
+                
+                  
+
+
+                  {currentEmployees.map((employee, index) => (
+                    <tr key={`${employee.id}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100'}>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {indexOfFirstItem + index + 1}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <img
+                          src={employee.photoUrl}
+                          alt={`${employee.name} ${employee.last_name}`}
+                          className="h-10 w-10 rounded-full object-cover"
+                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+                          }}
+                        />
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.last_name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.agency}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.date_of_birth}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.high_date}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status === 'SI' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {employee.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {employee.low_date || '-'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.id_user}</td>
+
+                      {/* Nueva celda con botón de editar */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <button
+                          onClick={() => openEditEmployeeModal(employee)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-xs flex items-center space-x-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span>Editar</span>
+                        </button>
                       </td>
                     </tr>
-                  ) : (
-                    currentEmployees.map((employee, index) => (
-                      <tr key={`${employee.id}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100'}>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {indexOfFirstItem + index + 1}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <img
-                            src={employee.photoUrl}
-                            alt={`${employee.name} ${employee.last_name}`}
-                            className="h-10 w-10 rounded-full object-cover"
-                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                              const target = e.target as HTMLImageElement;
-                              target.onerror = null;
-                              // Usar una imagen base64 sencilla en lugar de depender de un servicio externo
-                              target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
-                            }}
-                          />
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.last_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.agency}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.date_of_birth}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.high_date}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status === 'SI' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                            {employee.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {employee.low_date || '-'}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.id_user}</td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -1325,6 +1411,170 @@ function RhAdmin() {
                       className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center"
                     >
                       Eliminar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal para editar empleado */}
+        {showEditEmployeeModal && editEmployeeData && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl overflow-auto max-h-[90vh]">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-6 w-6 text-purple-700" />
+                    <h2 className="text-xl font-semibold text-gray-800">Editar Empleado</h2>
+                  </div>
+                  <button
+                    onClick={closeEditEmployeeModal}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveEditEmployee}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Nombre */}
+                    <div>
+                      <label htmlFor="edit-nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-nombre"
+                        name="name"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.name}
+                        onChange={handleEditEmployeeChange}
+                      />
+                    </div>
+
+                    {/* Apellido */}
+                    <div>
+                      <label htmlFor="edit-apellido" className="block text-sm font-medium text-gray-700 mb-1">
+                        Apellido
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-apellido"
+                        name="last_name"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.last_name}
+                        onChange={handleEditEmployeeChange}
+                      />
+                    </div>
+
+                    {/* Agencia */}
+                    <div>
+                      <label htmlFor="edit-agencia" className="block text-sm font-medium text-gray-700 mb-1">
+                        Agencia
+                      </label>
+                      <select
+                        id="edit-agencia"
+                        name="agency"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.agency}
+                        onChange={handleEditEmployeeChange}
+                      >
+                        <option value="">Seleccionar agencia</option>
+                        {AGENCIAS.map((agencia) => (
+                          <option key={agencia} value={agencia}>
+                            {agencia}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Fecha de Nacimiento */}
+                    <div>
+                      <label htmlFor="edit-fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Nacimiento
+                      </label>
+                      <input
+                        type="date"
+                        id="edit-fechaNacimiento"
+                        name="date_of_birth"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.date_of_birth}
+                        onChange={handleEditEmployeeChange}
+                      />
+                    </div>
+
+                    {/* Fecha de Alta */}
+                    <div>
+                      <label htmlFor="edit-fechaAlta" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Alta
+                      </label>
+                      <input
+                        type="date"
+                        id="edit-fechaAlta"
+                        name="high_date"
+                        required
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.high_date}
+                        onChange={handleEditEmployeeChange}
+                      />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        id="edit-status"
+                        name="status"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.status}
+                        onChange={handleEditEmployeeChange}
+                      >
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                      </select>
+                    </div>
+
+                    {/* URL de Foto */}
+                    <div>
+                      <label htmlFor="edit-photo" className="block text-sm font-medium text-gray-700 mb-1">
+                        URL de Foto (Google Drive)
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-photo"
+                        name="photo"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData.photo || ''}
+                        onChange={handleEditEmployeeChange}
+                        placeholder="https://drive.google.com/file/d/..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeEditEmployeeModal}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-purple-700 text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Guardar Cambios
                     </button>
                   </div>
                 </form>

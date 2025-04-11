@@ -391,6 +391,58 @@ app.post('/api/employees', async (req, res) => {
 });
 
 
+// Agregar esta ruta al archivo src/server/server.js
+
+// Ruta para actualizar un empleado existente
+app.put('/api/employees/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, last_name, agency, date_of_birth, high_date, status, photo, id_user } = req.body;
+
+    if (!name || !last_name || !agency || !date_of_birth || !high_date || !status || !id_user) {
+      return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
+    }
+
+    const connection = await pool.getConnection();
+
+    // Verificar si el empleado existe
+    const [existingEmployees] = await connection.query('SELECT id FROM Employees WHERE id = ?', [id]);
+
+    if (existingEmployees.length === 0) {
+      connection.release();
+      return res.status(404).json({ message: 'Empleado no encontrado' });
+    }
+
+    // Verificar si el id_user existe
+    const [existingUsers] = await connection.query('SELECT id FROM Users WHERE id = ?', [id_user]);
+
+    if (existingUsers.length === 0) {
+      connection.release();
+      return res.status(404).json({ message: 'El usuario asociado no existe' });
+    }
+
+    // Actualizar el empleado
+    await connection.query(`
+      UPDATE Employees 
+      SET name = ?, last_name = ?, agency = ?, 
+      date_of_birth = STR_TO_DATE(?, '%Y-%m-%d'), 
+      high_date = STR_TO_DATE(?, '%Y-%m-%d'), 
+      status = ?, photo = ?, id_user = ?
+      WHERE id = ?
+    `, [name, last_name, agency, date_of_birth, high_date, status, photo, id_user, id]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      message: 'Empleado actualizado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al actualizar empleado:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+});
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
