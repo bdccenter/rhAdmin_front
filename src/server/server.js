@@ -391,13 +391,11 @@ app.post('/api/employees', async (req, res) => {
 });
 
 
-// Agregar esta ruta al archivo src/server/server.js
-
 // Ruta para actualizar un empleado existente
 app.put('/api/employees/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, last_name, agency, date_of_birth, high_date, status, photo, id_user } = req.body;
+    const { name, last_name, agency, date_of_birth, high_date, status, low_date, photo, id_user } = req.body;
 
     if (!name || !last_name || !agency || !date_of_birth || !high_date || !status || !id_user) {
       return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
@@ -421,15 +419,34 @@ app.put('/api/employees/:id', async (req, res) => {
       return res.status(404).json({ message: 'El usuario asociado no existe' });
     }
 
-    // Actualizar el empleado
-    await connection.query(`
+    // Preparar fecha de baja
+    let lowDateQuery = null;
+    if (low_date && low_date !== '') {
+      lowDateQuery = `STR_TO_DATE(?, '%Y-%m-%d')`;
+    } else {
+      lowDateQuery = 'NULL';
+    }
+
+    // Actualizar el empleado con manejo especial para la fecha de baja
+    let query = `
       UPDATE Employees 
       SET name = ?, last_name = ?, agency = ?, 
       date_of_birth = STR_TO_DATE(?, '%Y-%m-%d'), 
       high_date = STR_TO_DATE(?, '%Y-%m-%d'), 
-      status = ?, photo = ?, id_user = ?
+      status = ?, 
+      low_date = ${lowDateQuery === 'NULL' ? 'NULL' : lowDateQuery}, 
+      photo = ?, id_user = ?
       WHERE id = ?
-    `, [name, last_name, agency, date_of_birth, high_date, status, photo, id_user, id]);
+    `;
+
+    let params = [];
+    if (lowDateQuery === 'NULL') {
+      params = [name, last_name, agency, date_of_birth, high_date, status, photo, id_user, id];
+    } else {
+      params = [name, last_name, agency, date_of_birth, high_date, status, low_date, photo, id_user, id];
+    }
+
+    await connection.query(query, params);
 
     connection.release();
 
@@ -439,6 +456,35 @@ app.put('/api/employees/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Error al actualizar empleado:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+});
+
+// Ruta para eliminar un empleado
+app.delete('/api/employees/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    // Verificar si el empleado existe
+    const [existingEmployees] = await connection.query('SELECT id FROM Employees WHERE id = ?', [id]);
+
+    if (existingEmployees.length === 0) {
+      connection.release();
+      return res.status(404).json({ message: 'Empleado no encontrado' });
+    }
+
+    // Eliminar el empleado
+    await connection.query('DELETE FROM Employees WHERE id = ?', [id]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      message: 'Empleado eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al eliminar empleado:', error);
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 });

@@ -125,6 +125,25 @@ function RhAdmin() {
 
 
 
+  const handleDeleteEmployee = async (employeeId: number) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este empleado? Esta acción no se puede deshacer.')) {
+      try {
+        // Llamada a la API para eliminar el empleado
+        const response = await axios.delete(`${API_URL}/employees/${employeeId}`);
+
+        if (response.data.success) {
+          showNotification('success', 'Empleado eliminado exitosamente');
+          closeEditEmployeeModal();
+          fetchEmployees(); // Recargar la lista de empleados
+        }
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.message || 'Error al eliminar empleado';
+        showNotification('error', errorMessage);
+        console.error('Error al eliminar empleado:', err);
+      }
+    }
+  };
+
   const openEditEmployeeModal = (employee: ProcessedEmployee) => {
     // Formatear las fechas para el input date (YYYY-MM-DD)
     const formatDateForInput = (dateStr: string) => {
@@ -168,6 +187,13 @@ function RhAdmin() {
     if (!editEmployeeData) return;
 
     try {
+      // Asegúrate de que la fecha de baja esté en el formato correcto (YYYY-MM-DD)
+      // y de que sea null si no está presente
+      let lowDate = null;
+      if (editEmployeeData.low_date && editEmployeeData.low_date.trim() !== '') {
+        lowDate = editEmployeeData.low_date; // Ya debe estar en formato YYYY-MM-DD del input date
+      }
+
       // Preparar datos para envío a la API
       const apiData = {
         name: editEmployeeData.name,
@@ -176,6 +202,7 @@ function RhAdmin() {
         date_of_birth: editEmployeeData.date_of_birth,
         high_date: editEmployeeData.high_date,
         status: editEmployeeData.status,
+        low_date: lowDate,
         photo: editEmployeeData.photo,
         id_user: editEmployeeData.id_user
       };
@@ -781,8 +808,8 @@ function RhAdmin() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                
-                  
+
+
 
 
                   {currentEmployees.map((employee, index) => (
@@ -901,6 +928,8 @@ function RhAdmin() {
 
                 <form onSubmit={handleSubmitForm}>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+
                     {/* Nombre */}
                     <div>
                       <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1542,6 +1571,20 @@ function RhAdmin() {
                       </select>
                     </div>
 
+                    <div>
+                      <label htmlFor="edit-fechaBaja" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Baja
+                      </label>
+                      <input
+                        type="date"
+                        id="edit-fechaBaja"
+                        name="low_date"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={editEmployeeData?.low_date || ''}
+                        onChange={handleEditEmployeeChange}
+                      />
+                    </div>
+
                     {/* URL de Foto */}
                     <div>
                       <label htmlFor="edit-photo" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1571,10 +1614,25 @@ function RhAdmin() {
 
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-purple-700 text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                      className="px-4 py-2 bg-blue-700 text-white rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
                     >
-                      <Save className="h-4 w-4 mr-2" />
+                      <img
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII=" alt="save--v1"
+                        className="h-4 w-4 mr-2"
+                      />
                       Guardar Cambios
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteEmployee(editEmployeeData.id)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center"
+                    >
+                      <img
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADd0lEQVR4nO3WS08TURgG4MNaEzdsXCj0fqEttG6Uf2DcSEj8C2DcmBiBdmHd+QvEfaHQu6VMgUK7kzWYKEwBE7WXmc5MWyMuicecGQ7UMqUz0zNIYt/kTSCB6fM1M2c+APrpp5//PLM7jwZmdssDM7tQVV/ulMDMx4f/mg8QRDX+rDvfr14c/HQTzO3fA376CQjQz8HcZwjm9iDw70MQQKVPW+zw8770t/49KP4vuga6Frrmi90bZLGzX26BwMEkCBTfgACdAwH6m4TRq/Rv4C9+lT4LfebBpGjQHD+9py+42L3IoDkBOnsNBqBAr/HmG0e+QhN2qzeP24DerQYcw90872gOtS51ow49uOtS3esCdK8J0J0VDgGp+PLN7SuDr0l1UfwHYgN4C43UBXi+O3x0swWtFJ7F5ZPEBvAVmu9k4Vt6wAXoogTopLh5YgN4C83XWuAeDfARihfrzHBBcgPk69P4NvHK3d89w/kz+MiqVGeGnyI2gC/XnPB2ezBl4G4t8FURDx0Z/jGxAcYK9XFFJwoBuFMsB+0Z9gGxAdxbP4yKj8IWuEsD3LEi1brCGIgN4MkxN1SdKD3AHahpDqLPBCQzul7/perBzJ6fKPJwThZuT3PQluaOAel4NoQjtUehWrgd9X0N2lLsIfkB1oRtxfBWtAq4HeGlAcitETjuLJ/SeqI4FMNrYq1JltwagePKCvM9PZgK4DYRX4OWBPuW/ACUENR6otgVwq1JVmqCfUV+gAw/rRl+ilYAhxbUGDtFfoBVYUIrvB3dEZ5goSUu/k5ujcAZoWrjPcOTl8MtcRaa4yw0xQiuEThuijWqOwrbv+1TeKITnIHmmFRrjOAagYNe7cTgcXm4OcZAU5SBnhDhNQLHvsIda4FbFMJNUQYaI9WfuuDFAdLckYqjUB4ek4ebUCMMNCxXD/UbIMVua4Gb2+HRi3BjpCrWsFQlv0bg2FK1FDF45G+4cVnq8FIlqd8ASXZeC7z92za1oY3LVXTroG8fDUB+jcCxJtggcfhSaytwOFwmv0bgmFPstBa4sRs8jOC4JfJrBI4lyU50evkogRsugy9KHQpVyK8ROOgVrxt8sQKHFlBL93UbwBquDJpj1ROt8OFL4WU4FCqd3A5XBoGeMUWZZ6Yo01AOr3SHL5Th3VC5fidUfqorvp9++gHXLn8A4SXcqAb6QuoAAAAASUVORK5CYII=" alt="filled-trash"
+                        className="h-4 w-4 mr-2"
+                      />
+                      Eliminar
                     </button>
                   </div>
                 </form>
