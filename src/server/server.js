@@ -1,5 +1,3 @@
-// server.js - Archivo principal del servidor usando sintaxis ESM
-
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
