@@ -352,6 +352,44 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+// Ruta para crear un nuevo empleado
+app.post('/api/employees', async (req, res) => {
+  try {
+    const { name, last_name, agency, date_of_birth, high_date, status, photo, id_user } = req.body;
+
+    if (!name || !last_name || !agency || !date_of_birth || !high_date || !status || !id_user) {
+      return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
+    }
+
+    const connection = await pool.getConnection();
+
+    // Verificar si el id_user existe
+    const [existingUsers] = await connection.query('SELECT id FROM Users WHERE id = ?', [id_user]);
+
+    if (existingUsers.length === 0) {
+      connection.release();
+      return res.status(404).json({ message: 'El usuario asociado no existe' });
+    }
+
+    // Insertar el nuevo empleado
+    const [result] = await connection.query(`
+      INSERT INTO Employees (name, last_name, agency, date_of_birth, high_date, status, photo, id_user) 
+      VALUES (?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), ?, ?, ?)
+    `, [name, last_name, agency, date_of_birth, high_date, status, photo, id_user]);
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Empleado creado exitosamente',
+      employeeId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error al crear empleado:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+});
+
 
 // Iniciar el servidor
 app.listen(PORT, () => {
