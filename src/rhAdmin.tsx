@@ -5,6 +5,15 @@ import { MdNextPlan } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useNotification } from './context/NotificationContext';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { SelectChangeEvent } from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+
+
 
 
 // Definimos la interfaz para los datos de empleados que recibiremos de la API
@@ -537,13 +546,13 @@ function RhAdmin() {
   };
 
   // Maneja el cambio en el filtro de agencia
-  const handleAgencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleAgencyChange = (e: SelectChangeEvent) => {
     setSelectedAgency(e.target.value);
     setCurrentPage(1);
   };
 
   // Maneja el cambio en el filtro de status
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (e: SelectChangeEvent) => {
     setSelectedStatus(e.target.value);
     setCurrentPage(1);
   };
@@ -625,23 +634,31 @@ function RhAdmin() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-purple-700 text-white p-4">
+      <div className="text-white p-4" style={{ backgroundColor: '#493F91' }}>
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
+            {/* Logo AUTO INSIGHTS */}
             <img
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFRUlEQVR4nO2YfWgbZRzHT5j4x0QQNsE/5v7TPyb6x5jgdreKII6BIGIaS7o4cLNO7cS9JFMqnQwtOBE3usrd1rkVqjSXviRp09ZmS5vLpSZNX7DrwPfeXbK2s6us3ZhdO37yXFq9tcm95ZqmSb7whXB5eZ7v537P77knGFZQQQWtuvo8u7GoW8CiHlhZuwWsv3UXlnWKZiL8f+awrFM0Y+ETzjpFCwBgTVSA2WzeZDZZnOZiy7S5uBS0WHMFeGqNsVEAzCh8cekNrcFzB4AJ3Xl94XUByLYlYNZR9jkGoFR3+NxYAsX/hwHGdnuuxy7E3YfZi1Vl7MG33xSslj23LSV7Zt+yWqc+fn/vz7UnynrZ8wf9Y22HQne7j/6eWwCCds3OmSVQvs8az1sA5fus8anOI9GMAMiGJQCtr22GNpMPvKZZPaHXPoA2MTyIThJqqgoTreb6mlwC0GaayXMAr3fJAcj5JgioB3hNPyR6gC0NALaZNf+HCARtI2lUwBXZH0d/U0U9fEbCRz0v6wVQrRsAYzuNpas+z7fLAqFrmRIEjjwDjO2ejvD3gLFtSXsCQ53rsT7PiCT8iHgtkwLGXqNj/VcbNoGwawvW574lGr3OtMBb/hAwtkvq777dh75j6CSirr2iV0vgr1wHjO0LYBTKHvUMo8Nnk6CjBOByGUDgQwDmaMI96LXtNLAfPY3luqB94QFpibF8EQQOA/j2A3RYANrNCXdachsAQY4+vpPkPiBIPjrP2MeXrv155tgYem8HxVmLKmEdlgt6qW5sPX5WKMVJrgMnuXmC4gGZ7ajuXgog1FHjX3wfp/g/cYo79NypXx5Jdw4OR/NWJ93COGnXLO1omQyxEdDpuVAw4gsEBjYqDlpExjfgFP81QXLTi6GkfpEanUUQUCUgo9foWpLP3iQo/qvnz/2xWV9470ba4Zp00i5AbnJ6BtMAkHAwckJ2UIIc3U5Q3ESy4HqNU/w/BMkdxwAe0AKAplv2L4ZHdrm8PQYAOJVywB3fCM/iJHfLyPBLXKMRQI0UQLvXlzaA3mD4QNLBtpLRBwmSv7KC4Ret+kTmpFu6pQB8XT1DaVdAKFKUdDD8rFCagfCAGqoGANelAJhAbzpNUHTKJohTfGsmABAUfxev4R5VCt/Y2PiYNHyaO8Di+p9IOSBO8uPSiT7x6YDoFakCii9RAkDTzS9IAcjtAEODwyDEYiDE4jA4+FNKACwb9ssA4Oa1Ath9Qfluo4ej5QC4emUALe9JAbhd7SkbIAp+bWxctCDEZSognPp4TiyZpBKA/t/GxAFfqRMUAHBly/sA/zdqugoAzqjdAdQCYNnIu4YB8F+9Jg54oCkmC6CoeuLhZA9UOMkn78YLcjpcfrU7ACp7BAGFHxwY1r4D6AFQF05Q/6xLHoD42yRHJVkGX2LZsgPoAfC5LwHg4o9xRQA7SX7b8grgfsVSqL7evcHoHYBlw3+lGk+Uli6ODj93mE/gzlAt9A5fVQSAhFN8f6rfAsY+DUFbEwSOPYk+63C4i9TuABoA+OUBkMkPPiknveC50HF448KwIgCC4t6RhpIzTbt61O4A6p8BwmfkAVBcsx4AyJe9lCIAdDRWDcBxPwAjzgCyOwDS9nOxpwiKn9ID4GZ3pSIApO8cnhsqIQzetwP4AgYsgcg2TEnE+dgmguIdC+d41QCQ1QBodLh2fU+7r6uogEnjdoDwTCgYqVIM31DxKuSDCwBSqSEL7k6hAipWcQlIddKKQy4Z06qT+Q6gIR/LXqrVnnABQEWhAqCwBCpWsQcUVBCWF/oXOUVPm0BC6i0AAAAASUVORK5CYII=" alt="external-blogger-blogger-and-influencer-itim2101-flat-itim2101-1"
+              src="./img/AUTO_INSIGHTS_LOGO-03.jpg"
+              alt="Auto Insights Logo"
+              className="h-10 w-32 mr-2" // Mantiene la altura en 32px pero establece un ancho de 128px
+            />
+            <img
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFRUlEQVR4nO2YfWgbZRzHT5j4x0QQNsE/5v7TPyb6x5jgdreKII6BIGIaS7o4cLNO7cS9JFMqnQwtOBE3usrd1rkVqjSXviRp09ZmS5vLpSZNX7DrwPfeXbK2s6us3ZhdO37yXFq9tcm95ZqmSb7whXB5eZ7v537P77knGFZQQQWtuvo8u7GoW8CiHlhZuwWsv3UXlnWKZiL8f+awrFM0Y+ETzjpFCwBgTVSA2WzeZDZZnOZiy7S5uBS0WHMFeGqNsVEAzCh8cekNrcFzB4AJ3Xl94XUByLYlYNZR9jkGoFR3+NxYAsX/hwHGdnuuxy7E3YfZi1Vl7MG33xSslj23LSV7Zt+yWqc+fn/vz7UnynrZ8wf9Y22HQne7j/6eWwCCds3OmSVQvs8az1sA5fus8anOI9GMAMiGJQCtr22GNpMPvKZZPaHXPoA2MTyIThJqqgoTreb6mlwC0GaayXMAr3fJAcj5JgioB3hNPyR6gC0NALaZNf+HCARtI2lUwBXZH0d/U0U9fEbCRz0v6wVQrRsAYzuNpas+z7fLAqFrmRIEjjwDjO2ejvD3gLFtSXsCQ53rsT7PiCT8iHgtkwLGXqNj/VcbNoGwawvW574lGr3OtMBb/hAwtkvq777dh75j6CSirr2iV0vgr1wHjO0LYBTKHvUMo8Nnk6CjBOByGUDgQwDmaMI96LXtNLAfPY3luqB94QFpibF8EQQOA/j2A3RYANrNCXdachsAQY4+vpPkPiBIPjrP2MeXrv155tgYem8HxVmLKmEdlgt6qW5sPX5WKMVJrgMnuXmC4gGZ7ajuXgog1FHjX3wfp/g/cYo79NypXx5Jdw4OR/NWJ93COGnXLO1omQyxEdDpuVAw4gsEBjYqDlpExjfgFP81QXLTi6GkfpEanUUQUCUgo9foWpLP3iQo/qvnz/2xWV9470ba4Zp00i5AbnJ6BtMAkHAwckJ2UIIc3U5Q3ESy4HqNU/w/BMkdxwAe0AKAplv2L4ZHdrm8PQYAOJVywB3fCM/iJHfLyPBLXKMRQI0UQLvXlzaA3mD4QNLBtpLRBwmSv7KC4Bet+kTmpFu6pQB8XT1DaVdAKFKUdDD8rFCagfCAGqoGANelAJhAbzpNUHTKJohTfGsmABAUfxev4R5VCt/Y2PiYNHyaO8Di+p9IOSBO8uPSiT7x6YDoFakCii9RAkDTzS9IAcjtAEODwyDEYiDE4jA4+FNKACwb9ssA4Oa1Ath9Qfluo4ej5QC4emUALe9JAbhd7SkbIAp+bWxctCDEZSognPp4TiyZpBKA/t/GxAFfqRMUAHBly/sA/zdqugoAzqjdAdQCYNnIu4YB8F+9Jg54oCkmC6CoeuLhZA9UOMkn78YLcjpcfrU7ACp7BAGFHxwY1r4D6AFQF05Q/6xLHoD42yRHJVkGX2LZsgPoAfC5LwHg4o9xRQA7SX7b8grgfsVSqL7evcHoHYBlw3+lGk+Uli6ODj93mE/gzlAt9A5fVQSAhFN8f6rfAsY+DUFbEwSOPYk+63C4i9TuABoA+OUBkMkPPiknveC50HF448KwIgCC4t6RhpIzTbt61O4A6p8BwmfkAVBcsx4AyJe9lCIAdDRWDcBxPwAjzgCyOwDS9nOxpwiKn9ID4GZ3pSIApO8cnhsqIQzetwP4AgYsgcg2TEnE+dgmguIdC+d41QCQ1QBodLh2fU+7r6uogEnjdoDwTCgYqVIM31DxKuSDCwBSqSEL7k6hAipWcQlIddKKQy4Z06qT+Q6gIR/LXqrVnnABQEWhAqCwBCpWsQcUVBCWF/oXOUVPm0BC6i0AAAAASUVORK5CYII="
+              alt="external-blogger-blogger-and-influencer-itim2101-flat-itim2101-1"
               className="h-6 w-6"
             />
             <h1 className="text-xl font-semibold">Registro de Empleados</h1>
-
           </div>
           <button
             onClick={handleLogout}
             className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
             <img
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADYUlEQVR4nO3Z329URRTA8f0j1PcmPhnu7cqPxOgLgooJiU/yZngm8QcUrA2hDVs0DabGEBIIO5dWDAVrDEKCSbfdlm53KbQIkQYNPwShtNSF0rQWWwrdOV9zuWgvVp46p8FkTzKvs+dz58zc2XMTiXKUoxzleKYj2cTznrH7/MAOecaW/EBY6Hg0j7E3/cCmfUOFWvK+YZUX2Nsukn7qMHbSS/OG8+SXpXnON7aomnzweEUCO+rv5QWngKhsoh94vUX4egDyNyB3HTp/g8xV+OEyHL0I3/0C31wQDg4IzT8J5qyw54ywq09o7BUa8kJ9TqjtEj7pEKoywvrvhRXNT5TVXqeAqEajyQ9dgDPDcHoICoPuEO8dja+EHXQKiG/Y8yNwbkQHkZwro2mngHiN/nwbBn7XQbzTKlQGdtYztkENcHEUVURVm005Tf7fgCt3UUVUtysDro2hhqjOCmtbaX8p4EU1wPVx1BCvHvjnhTbmpVmqAhicQA3x2t8A14g4YPgP1BB13cLL++20c0QcMHIPVcSmjN3nG3s39lYeT6ZZ4QxQ/BNdRL9NVRqSThFxwOgUqoj0j9Ex6hQRB4xNMw9xehi+7IPGU/D5KdjZCw0n4bMC7ChAfR6290BdDrZ1w9YTUNMF1Z2wOQubOuCjduGDNmHdEbKeoebRSLPbC+zUgvdEHDB+n3mItw7rX7P9OcS1BQEmZpiHWPN/Akw+YB7iXBEa++DTgrCjINQXhFRe2N4j1PUItTlhW7ew9YRQE955uoSPO4UtWaEqK2zsED7MCO+3Ce8esSf9wO6MBl/5xt53WkL3HvCfCIcbO6W6iaceooo4fhndY3R6FlXEF70ovMiM/TWcbO23wkwJNcTBAVjWpHGVMFTU5smEyTwsoYZY1aJ0mQtj1pIqWZi1eojVLUrJxwGaiONXYEObwh8az1D9ygE72XQ+Amgi+oeiY9Rp+IGdCZd2ebNQEmXELRXA3OayIUAJUZcTkvsV2irxxlaYsAbi0h1Y2qTV2Iq1FsM6DQGuEccuEe+N3nALCHv3jyd/u1XovxUl7AJxcyI6fVYfeqI3usctwFAR9u4X6bpcDNv5CdexJODNRfjAUawMWJnQivDJhL37sP3t9BNTYAfDslF58uUoRznKkVis+Au1mxEyMIWnXQAAAABJRU5ErkJggg==" alt="exit"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADYUlEQVR4nO3Z329URRTA8f0j1PcmPhnu7cqPxOgLgooJiU/yZngm8QcUrA2hDVs0DabGEBIIO5dWDAVrDEKCSbfdlm53KbQIkQYNPwShtNSF0rQWWwrdOV9zuWgvVp46p8FkTzKvs+dz58zc2XMTiXKUoxzleKYj2cTznrH7/MAOecaW/EBY6Hg0j7E3/cCmfUOFWvK+YZUX2Nsukn7qMHbSS/OG8+SXpXnON7aomnzweEUCO+rv5QWngKhsoh94vUX4egDyNyB3HTp/g8xV+OEyHL0I3/0C31wQDg4IzT8J5qyw54ywq09o7BUa8kJ9TqjtEj7pEKoywvrvhRXNT5TVXqeAqEajyQ9dgDPDcHoICoPuEO8dja+EHXQKiG/Y8yNwbkQHkZwro2mngHiN/nwbBn7XQbzTKlQGdtYztkENcHEUVURVm005Tf7fgCt3UUVUtysDro2hhqjOCmtbaX8p4EU1wPVx1BCvHvjnhTbmpVmqAhicQA3x2t8A14g4YPgP1BB13cLL++20c0QcMHIPVcSmjN3nG3s39lYeT6ZZ4QxQ/BNdRL9NVRqSThFxwOgUqoj0j9Ex6hQRB4xNMw9xehi+7IPGU/D5KdjZCw0n4bMC7ChAfR6290BdDrZ1w9YTUNMF1Z2wOQubOuCjduGDNmHdEbKeoebRSLPbC+zUgvdEHDB+n3mItw7rX7P9OcS1BQEmZpiHWPN/Akw+YB7iXBEa++DTgrCjINQXhFRe2N4j1PUItTlhW7ew9YRQE955uoSPO4UtWaEqK2zsED7MCO+3Ce8esSf9wO6MBl/5xt53WkL3HvCfCIcbO6W6iaceooo4fhndY3R6FlXEF70ovMiM/TWcbO23wkwJNcTBAVjWpHGVMFTU5smEyTwsoYZY1aJ0mQtj1pIqWZi1eojVLUrJxwGaiONXYEObwh8az1D9ygE72XQ+Amgi+oeiY9Rp+IGdCZd2ebNQEmXELRXA3OayIUAJUZcTkvsV2irxxlaYsAbi0h1Y2qTV2Iq1FsM6DQGuEccuEe+N3nALCHv3jyd/u1XovxUl7AJxcyI6fVYfeqI3usctwFAR9u4X6bpcDNv5CdexJODNRfjAUawMWJnQivDJhL37sP3t9BNTYAfDslF58uUoRznKkVis+Au1mxEyMIWnXQAAAABJRU5ErkJggg=="
+              alt="exit"
               className="h-6 w-6"
             />
+            {/* Texto del botón */}
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -651,7 +668,6 @@ function RhAdmin() {
       <div className="container mx-auto py-6 px-4">
         <div className="flex justify-between items-center mb-6">
           {/* Botón de Agregar Empleado */}
-          {/* Botón de Agregar Empleado con nuevo ícono */}
           <button
             onClick={openModal}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2"
@@ -680,52 +696,96 @@ function RhAdmin() {
           {/* Filtros */}
           <div className="flex flex-wrap justify-end items-end gap-4">
             <div className="flex-grow-0 min-w-[180px]">
-              <input
+              <TextField
                 id="nameSearch"
-                type="text"
-                placeholder="Nombre"
-                className="w-full px-3 py-2 border rounded-md text-sm"
+                label="Nombre"
+                variant="outlined"
+                size="small"
+                fullWidth
                 value={nameSearchTerm}
                 onChange={handleNameSearchChange}
               />
             </div>
 
-            <div className="flex-grow-0 min-w-[180px]">
-              <input
+            <div className="flex-grow-0 min-w-[160px]">
+              <TextField
                 id="otherSearch"
-                type="text"
-                placeholder="Apellido"
-                className="w-full px-3 py-2 border rounded-md text-sm"
+                label="Apellido"
+                variant="outlined"
+                size="small"
+                fullWidth
                 value={otherSearchTerm}
                 onChange={handleOtherSearchChange}
               />
             </div>
 
             <div className="flex-grow-0 min-w-[180px]">
-              <select
-                id="agencyFilter"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-                value={selectedAgency}
-                onChange={handleAgencyChange}
-              >
-                <option value="">Todas las agencias</option>
-                {agencies.map(agency => (
-                  <option key={agency} value={agency}>{agency}</option>
-                ))}
-              </select>
+              <Box sx={{ minWidth: 120, width: '100%' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="agency-select-label">Agencia</InputLabel>
+                  <Select
+                    labelId="agency-select-label"
+                    id="agencyFilter"
+                    value={selectedAgency}
+                    label="Agencia"
+                    onChange={handleAgencyChange}
+                    MenuProps={{
+                      TransitionProps: {
+                        timeout: 300, // Duración de la transición en ms
+                        easing: {
+                          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                          exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                        }
+                      },
+                      PaperProps: {
+                        style: {
+                          maxHeight: 224, // Altura máxima del menú
+                          boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)' // Sombra más suave
+                        }
+                      }
+                    }}
+                  >
+                    <MenuItem value="">Todas las agencias</MenuItem>
+                    {agencies.map(agency => (
+                      <MenuItem key={agency} value={agency}>{agency}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
             </div>
 
             <div className="flex-grow-0 min-w-[150px]">
-              <select
-                id="statusFilter"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-                value={selectedStatus}
-                onChange={handleStatusChange}
-              >
-                <option value="">Todos los status</option>
-                <option value="SI">SI</option>
-                <option value="NO">NO</option>
-              </select>
+              <Box sx={{ minWidth: 120, width: '100%' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="status-select-label">Status</InputLabel>
+                  <Select
+                    labelId="status-select-label"
+                    id="statusFilter"
+                    value={selectedStatus}
+                    label="Status"
+                    onChange={handleStatusChange}
+                    MenuProps={{
+                      TransitionProps: {
+                        timeout: 300,
+                        easing: {
+                          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                          exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                        }
+                      },
+                      PaperProps: {
+                        style: {
+                          maxHeight: 224,
+                          boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)'
+                        }
+                      }
+                    }}
+                  >
+                    <MenuItem value="">Todos los status</MenuItem>
+                    <MenuItem value="SI">SI</MenuItem>
+                    <MenuItem value="NO">NO</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
             </div>
 
             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm flex items-center space-x-2">
@@ -915,8 +975,8 @@ function RhAdmin() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <User className="h-6 w-6 text-purple-700" />
-                    <h2 className="text-xl font-semibold text-gray-800">Ingresar Nuevo Empleado</h2>
+                    <User className="h-6 w-6 text-blue-700" />
+                    <h2 className="text-xl font-semibold text-blue-800">Ingresar Nuevo Empleado</h2>
                   </div>
                   <button
                     onClick={closeModal}
@@ -1065,9 +1125,13 @@ function RhAdmin() {
 
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-purple-700 text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                      className="px-4 py-2 bg-[#493F91] text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
                     >
-                      <Save className="h-4 w-4 mr-2" />
+
+                      <img
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII=" alt="save--v1"
+                        className="h-4 w-4 mr-2"
+                      />
                       Ingresar Empleado
                     </button>
                   </div>
@@ -1105,7 +1169,7 @@ function RhAdmin() {
                   <div className="mb-8">
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-purple-700 text-white">
+                        <thead className="text-white bg-[#493F91] text-white">
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
@@ -1147,7 +1211,7 @@ function RhAdmin() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                   <button
                                     onClick={() => openEditModal(user)}
-                                    className="text-white bg-purple-600 hover:bg-purple-700 py-1 px-3 rounded-md text-xs"
+                                    className="text-white bg-purple-900 hover:bg-purple-700 py-1 px-3 rounded-md text-xs"
                                   >
                                     Editar
                                   </button>
@@ -1281,9 +1345,12 @@ function RhAdmin() {
 
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
+                        className="px-4 py-2 bg-[#493F91] text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
                       >
-                        <Save className="h-4 w-4 mr-2" />
+                        <img
+                          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII=" alt="save--v1"
+                          className="h-4 w-4 mr-2"
+                        />
                         {isEditing ? 'Actualizar Usuario' : 'Registrar Usuario'}
                       </button>
                     </div>
@@ -1640,6 +1707,8 @@ function RhAdmin() {
             </div>
           </div>
         )}
+
+
       </div>
     </div>
   );
