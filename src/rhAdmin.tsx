@@ -12,8 +12,15 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es'; // Importar locale español
+import { esES } from '@mui/x-date-pickers/locales';
 
-
+dayjs.locale('es');
 
 
 // Definimos la interfaz para los datos de empleados que recibiremos de la API
@@ -180,14 +187,16 @@ function RhAdmin() {
   // 4. Función para manejar cambios en el formulario de edición
   const handleEditEmployeeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
+    // Add null check for safety, although the modal logic should prevent this
     if (editEmployeeData) {
       setEditEmployeeData({
         ...editEmployeeData,
-        [name]: value
+        [name]: value,
       });
     }
   };
+
+
 
   // 5. Función para guardar los cambios del empleado
   const handleSaveEditEmployee = async (e: React.FormEvent) => {
@@ -415,12 +424,19 @@ function RhAdmin() {
 
 
   // Maneja cambios en el formulario de nuevo administrador
-  const handleAdminFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleAdminFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
+  ) => {
+
     const { name, value } = e.target;
-    setAdminFormData({
-      ...adminFormData,
-      [name]: value
-    });
+
+    // Asegúrate de que 'name' exista (es buena práctica, aunque Select con prop 'name' lo tendrá)
+    if (name) {
+      setAdminFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
 
@@ -558,8 +574,8 @@ function RhAdmin() {
   };
 
   // Maneja cambios en el formulario de nuevo empleado
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleFormChange = (e: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+    const { name, value } = e.target as { name: string; value: string };
     setFormData({
       ...formData,
       [name]: value
@@ -610,7 +626,6 @@ function RhAdmin() {
   };
 
   // Función para abrir el modal
-  // Modifica la función openModal para cargar usuarios
   const openModal = () => {
     fetchUsers(); // Cargar la lista de usuarios disponibles
     setShowModal(true);
@@ -650,17 +665,30 @@ function RhAdmin() {
             />
             <h1 className="text-xl font-semibold">Registro de Empleados</h1>
           </div>
-          <button
+          <Button
+            variant="contained"
             onClick={handleLogout}
-            className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
-            <img
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADYUlEQVR4nO3Z329URRTA8f0j1PcmPhnu7cqPxOgLgooJiU/yZngm8QcUrA2hDVs0DabGEBIIO5dWDAVrDEKCSbfdlm53KbQIkQYNPwShtNSF0rQWWwrdOV9zuWgvVp46p8FkTzKvs+dz58zc2XMTiXKUoxzleKYj2cTznrH7/MAOecaW/EBY6Hg0j7E3/cCmfUOFWvK+YZUX2Nsukn7qMHbSS/OG8+SXpXnON7aomnzweEUCO+rv5QWngKhsoh94vUX4egDyNyB3HTp/g8xV+OEyHL0I3/0C31wQDg4IzT8J5qyw54ywq09o7BUa8kJ9TqjtEj7pEKoywvrvhRXNT5TVXqeAqEajyQ9dgDPDcHoICoPuEO8dja+EHXQKiG/Y8yNwbkQHkZwro2mngHiN/nwbBn7XQbzTKlQGdtYztkENcHEUVURVm005Tf7fgCt3UUVUtysDro2hhqjOCmtbaX8p4EU1wPVx1BCvHvjnhTbmpVmqAhicQA3x2t8A14g4YPgP1BB13cLL++20c0QcMHIPVcSmjN3nG3s39lYeT6ZZ4QxQ/BNdRL9NVRqSThFxwOgUqoj0j9Ex6hQRB4xNMw9xehi+7IPGU/D5KdjZCw0n4bMC7ChAfR6290BdDrZ1w9YTUNMF1Z2wOQubOuCjduGDNmHdEbKeoebRSLPbC+zUgvdEHDB+n3mItw7rX7P9OcS1BQEmZpiHWPN/Akw+YB7iXBEa++DTgrCjINQXhFRe2N4j1PUItTlhW7ew9YRQE955uoSPO4UtWaEqK2zsED7MCO+3Ce8esSf9wO6MBl/5xt53WkL3HvCfCIcbO6W6iaceooo4fhndY3R6FlXEF70ovMiM/TWcbO23wkwJNcTBAVjWpHGVMFTU5smEyTwsoYZY1aJ0mQtj1pIqWZi1eojVLUrJxwGaiONXYEObwh8az1D9ygE72XQ+Amgi+oeiY9Rp+IGdCZd2ebNQEmXELRXA3OayIUAJUZcTkvsV2irxxlaYsAbi0h1Y2qTV2Iq1FsM6DQGuEccuEe+N3nALCHv3jyd/u1XovxUl7AJxcyI6fVYfeqI3usctwFAR9u4X6bpcDNv5CdexJODNRfjAUawMWJnQivDJhL37sP3t9BNTYAfDslF58uUoRznKkVis+Au1mxEyMIWnXQAAAABJRU5ErkJggg=="
-              alt="exit"
-              className="h-6 w-6"
-            />
-            {/* Texto del botón */}
-            <span>Cerrar sesión</span>
-          </button>
+            startIcon={
+              <img
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADYUlEQVR4nO3Z329URRTA8f0j1PcmPhnu7cqPxOgLgooJiU/yZngm8QcUrA2hDVs0DabGEBIIO5dWDAVrDEKCSbfdlm53KbQIkQYNPwShtNSF0rQWWwrdOV9zuWgvVp46p8FkTzKvs+dz58zc2XMTiXKUoxzleKYj2cTznrH7/MAOecaW/EBY6Hg0j7E3/cCmfUOFWvK+YZUX2Nsukn7qMHbSS/OG8+SXpXnON7aomnzweEUCO+rv5QWngKhsoh94vUX4egDyNyB3HTp/g8xV+OEyHL0I3/0C31wQDg4IzT8J5qyw54ywq09o7BUa8kJ9TqjtEj7pEKoywvrvhRXNT5TVXqeAqEajyQ9dgDPDcHoICoPuEO8dja+EHXQKiG/Y8yNwbkQHkZwro2mngHiN/nwbBn7XQbzTKlQGdtYztkENcHEUVURVm005Tf7fgCt3UUVUtysDro2hhqjOCmtbaX8p4EU1wPVx1BCvHvjnhTbmpVmqAhicQA3x2t8A14g4YPgP1BB13cLL++20c0QcMHIPVcSmjN3nG3s39lYeT6ZZ4QxQ/BNdRL9NVRqSThFxwOgUqoj0j9Ex6hQRB4xNMw9xehi+7IPGU/D5KdjZCw0n4bMC7ChAfR6290BdDrZ1w9YTUNMF1Z2wOQubOuCjduGDNmHdEbKeoebRSLPbC+zUgvdEHDB+n3mItw7rX7P9OcS1BQEmZpiHWPN/Akw+YB7iXBEa++DTgrCjINQXhFRe2N4j1PUItTlhW7ew9YRQE955uoSPO4UtWaEqK2zsED7MCO+3Ce8esSf9wO6MBl/5xt53WkL3HvCfCIcbO6W6iaceooo4fhndY3R6FlXEF70ovMiM/TWcbO23wkwJNcTBAVjWpHGVMFTU5smEyTwsoYZY1aJ0mQtj1pIqWZi1eojVLUrJxwGaiONXYEObwh8az1D9ygE72XQ+Amgi+oeiY9Rp+IGdCZd2ebNQEmXELRXA3OayIUAJUZcTkvsV2irxxlaYsAbi0h1Y2qTV2Iq1FsM6DQGuEccuEe+N3nALCHv3jyd/u1XovxUl7AJxcyI6fVYfeqI3usctwFAR9u4X6bpcDNv5CdexJODNRfjAUawMWJnQivDJhL37sP3t9BNTYAfDslF58uUoRznKkVis+Au1mxEyMIWnXQAAAABJRU5ErkJggg=="
+                alt="exit"
+                className="h-6 w-6"
+              />
+            }
+            sx={{
+              backgroundColor: '#dc2626', // Color rojo (equivalente a red-600 de Tailwind)
+              '&:hover': {
+                backgroundColor: '#b91c1c', // Color rojo oscuro (equivalente a red-700 de Tailwind)
+              },
+              textTransform: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+              fontSize: '0.875rem',
+            }}
+          >
+            Cerrar sesión
+          </Button>
         </div>
       </div>
 
@@ -668,30 +696,53 @@ function RhAdmin() {
       <div className="container mx-auto py-6 px-4">
         <div className="flex justify-between items-center mb-6">
           {/* Botón de Agregar Empleado */}
-          <button
+          <Button
+            variant="contained"
             onClick={openModal}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2"
+            startIcon={
+              <img
+                src="data:image/png;base64,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"
+                alt="user-group-man-woman"
+                className="h-5 w-5"
+              />
+            }
+            sx={{
+              backgroundColor: '#1976d2', // Color azul similar al de tu botón original
+              '&:hover': {
+                backgroundColor: '#1565c0', // Un tono más oscuro para el hover
+              },
+              textTransform: 'none', // Para mantener el texto con mayúsculas/minúsculas como está
+              padding: '8px 16px',
+              borderRadius: '6px',
+            }}
           >
-            {/* Imagen de icono */}
-            <img
-              src="data:image/png;base64,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"
-              alt="user-group-man-woman"
-              className="h-5 w-5"
-            />
-            <span>Agregar Empleado</span>
-          </button>
+            Agregar Empleado
+          </Button>
 
-          <button
+          <Button
+            variant="contained"
             onClick={openAdminModal}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2"
+            startIcon={
+              <img
+                src="data:image/png;base64,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"
+                alt="external-administrator-internet-of-things-itim2101-lineal-color-itim2101"
+                className="h-5 w-5"
+              />
+            }
+            sx={{
+              backgroundColor: '#1976d2', // Color azul Material UI
+              '&:hover': {
+                backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
+              },
+              textTransform: 'none', // Para mantener el texto con mayúsculas/minúsculas como está
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+              fontSize: '0.875rem',
+            }}
           >
-            <img
-              src="data:image/png;base64,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"
-              alt="external-administrator-internet-of-things-itim2101-lineal-color-itim2101"
-              className="h-5 w-5"
-            />
-            <span>Agregar Administrador</span>
-          </button>
+            Agregar Administrador
+          </Button>
 
           {/* Filtros */}
           <div className="flex flex-wrap justify-end items-end gap-4">
@@ -788,25 +839,56 @@ function RhAdmin() {
               </Box>
             </div>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm flex items-center space-x-2">
-              <img
-                src="https://img.icons8.com/fluency/48/search.png"
-                alt="icono de búsqueda"
-                className="h-5 w-5"
-              />
-              <span>Buscar</span>
-            </button>
+            <Button
+              variant="contained"
+              onClick={() => { /* Tu función de búsqueda */ }}
+              startIcon={
+                <img
+                  src="https://img.icons8.com/fluency/48/search.png"
+                  alt="icono de búsqueda"
+                  className="h-5 w-5"
+                />
+              }
+              sx={{
+                backgroundColor: '#1976d2', // Color azul Material UI
+                '&:hover': {
+                  backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
+                },
+                textTransform: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                fontSize: '0.875rem',
+              }}
+            >
+              Buscar
+            </Button>
 
-            <button
+            <Button
+              variant="contained"
               onClick={resetFilters}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm flex items-center space-x-2">
-              <img
-                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFe0lEQVR4nO2YbUwbdRzHT6KLyxbNmIw9wD2U8tjnkilqjMa3e7XEGHyhr0x8YTSZc4liFoxmzKcYdRo2lmXZXe9K2xW2AqUPh4vb9NWW6Ea2TBNg5X/Xa/u/q09hZcL+5lrKSqEU2gJpwjf5BF7w/9/nd/f//XoUwzazmc0Un05UYb0E26y80mHlFbeVj49aeUWx8Mp964iSsPJKxBKMj5p5xWEOKh9af/yzFUPokeW23NMzfnB3z8RtbC1juARrLHz8uHUkDqwjcWTl48iyJMpDginMQSVkCcif6HmpOnvf6lMTB6pPjSf2nBpHayK+P/jXTmsw3m3hlemcsnOiGcKLCajICXNA+bo1qDyp7v3Ud3cOVJ8cS+w+OYZ2r0UBFl5uN/MKzCVqySmaG5OKT5Hqzv3xaeXx64mqb2+jZAEnx0pXwIuX0KPmoNJdtKg/jbwYH0TEmTuosus6qvrmVukKaPsltNUckAeWkzUF5BlzQL5sDsiHDQHYZvT/s6v1GnpMXWvi4T6TX37e6JMPm3zQZ/TDmZSwnMSYhYYZQzu6riWLKM2dV+Vz3FWjX5ky+pTPjf7wrpXuaQnE9hqG4XGDT56aFx9eSB0zniyi6AJMfqU75+P3yS6dT64tdG/DcOxtVdaQBD7EmwI/fae4Aox+uX3Js+qHs4Zh2JFvli8XvRce1A/F7qdll0LvhaioUWn0Qbj4nMJZo1duL3jjHPL6oaUp+CIGH+zObq7U44YdWJHRDcHbuYT1aQZjSDcQ/a0weS+sMQ7D6ezG0g/HXMUcm3WLQZ0QWU2l98KpYhp2/dKJKgxDsdCiphqCn2HlEIMXtqndn3kedUOxmdXM+Q2NbhB+lN1QugH4E1Yu0Q1G+5ITIIMWT/Q9rFyiG4yOzssPpGi6CNuwconOE5VV6ZYMtF6xCiuXNHui0y0e9dhk4ERbNsJF0yv+rOkVURqKE6/mXdTsiUy3eKLquUfNF1NsWAF28YrGLiIVyi4ikhUv513UdDEip8XTGN1lMkLVNPVHR5svRJFKU5o+6VmsXNLYH3XPi/dHkjT2R95fbw8NF36Z4sRfSVY8Q7CgXetc4SBp7Jc60uJz8qixX7qCrXNIVnyL4tTGFRDFCohghfs4K7bmXVh/IfxMY18ELUSa0WxAH5D0pIlkwRHCBgKkDdzC6TCVf1Unqmh0R0Jp+QZ3GukLrFzS4Ja6GtwSyuKexinga33tajq8jeLAGMmCqxQj7i9ok3on3NfgkhIN5yVUn4HWFe5b639oqunwNoIFEyQrINIGZklGOKtl4BOr3qj+vPRDUty1EK1LOoqtcaqcke04A7pwm3CPYASEM8Kbq96kqQ/s1Lqk2Jy0eveR1hlGWof4oN4hvVZqacI++RLFgh4N/XBY4OxdDc6E3lELKmjTOkf41aR0Ng7xgdYhHi3lcSJY0KMeG4IFNzOLKDpap/h9nSOMlqQ33FdMY7c4I9tV1N9VacIGbhI2Aak/a5yhypIUoH61qHGIngzpeebeEu9peoUvKW7x9/y5ov4tyYnHSE74m+KEiQVFMOAmwQBUS0++gZUqNc7QVo1d9GS+2iaxZyLMqq+7Gnv4SJ0dPKdKtjhHt6hra5yhfZRdeIHixEMUJ/pIVvgv+QnLpT5lSRZ0zV/rdKgSPzf5OnF2/HGslEk+CU48sVA69ZqbhFuOtOjSEDYhgbOSBluPUJz4CskJkZyieWRT830xuE14F1uv4OzdHSQHTpA2IUGuUpbIhgH/4rTwVcGjspjUcnf3kjZwjLAJobyiSdk0ABE0+J1gJj8u6cgsOJ2ogmJDTxOM8AFhE1wELdwgaEHGaTBN0GCKoIFA0OAGTgO2lp48tKLX4s1sZjPYSvI/ZkYDkohpw24AAAAASUVORK5CYII="
-                alt="icono de resetear filtros"
-                className="h-5 w-5"
-              />
-              <span>Resetear filtros</span>
-            </button>
+              startIcon={
+                <img
+                  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFe0lEQVR4nO2YbUwbdRzHT6KLyxbNmIw9wD2U8tjnkilqjMa3e7XEGHyhr0x8YTSZc4liFoxmzKcYdRo2lmXZXe9K2xW2AqUPh4vb9NWW6Ea2TBNg5X/Xa/u/q09hZcL+5lrKSqEU2gJpwjf5BF7w/9/nd/f//XoUwzazmc0Un05UYb0E26y80mHlFbeVj49aeUWx8Mp964iSsPJKxBKMj5p5xWEOKh9af/yzFUPokeW23NMzfnB3z8RtbC1juARrLHz8uHUkDqwjcWTl48iyJMpDginMQSVkCcif6HmpOnvf6lMTB6pPjSf2nBpHayK+P/jXTmsw3m3hlemcsnOiGcKLCajICXNA+bo1qDyp7v3Ud3cOVJ8cS+w+OYZ2r0UBFl5uN/MKzCVqySmaG5OKT5Hqzv3xaeXx64mqb2+jZAEnx0pXwIuX0KPmoNJdtKg/jbwYH0TEmTuosus6qvrmVukKaPsltNUckAeWkzUF5BlzQL5sDsiHDQHYZvT/s6v1GnpMXWvi4T6TX37e6JMPm3zQZ/TDmZSwnMSYhYYZQzu6riWLKM2dV+Vz3FWjX5ky+pTPjf7wrpXuaQnE9hqG4XGDT56aFx9eSB0zniyi6AJMfqU75+P3yS6dT64tdG/DcOxtVdaQBD7EmwI/fae4Aox+uX3Js+qHs4Zh2JFvli8XvRce1A/F7qdll0LvhaioUWn0Qbj4nMJZo1duL3jjHPL6oaUp+CIGH+zObq7U44YdWJHRDcHbuYT1aQZjSDcQ/a0weS+sMQ7D6ezG0g/HXMUcm3WLQZ0QWU2l98KpYhp2/dKJKgxDsdCiphqCn2HlEIMXtqndn3kedUOxmdXM+Q2NbhB+lN1QugH4E1Yu0Q1G+5ITIIMWT/Q9rFyiG4yOzssPpGi6CNuwconOE5VV6ZYMtF6xCiuXNHui0y0e9dhk4ERbNsJF0yv+rOkVURqKE6/mXdTsiUy3eKLquUfNF1NsWAF28YrGLiIVyi4ikhUv513UdDEip8XTGN1lMkLVNPVHR5svRJFKU5o+6VmsXNLYH3XPi/dHkjT2R95fbw8NF36Z4sRfSVY8Q7CgXetc4SBp7Jc60uJz8qixX7qCrXNIVnyL4tTGFRDFCohghfs4K7bmXVh/IfxMY18ELUSa0WxAH5D0pIlkwRHCBgKkDdzC6TCVf1Unqmh0R0Jp+QZ3GukLrFzS4Ja6GtwSyuKexinga33tajq8jeLAGMmCqxQj7i9ok3on3NfgkhIN5yVUn4HWFe5b639oqunwNoIFEyQrINIGZklGOKtl4BOr3qj+vPRDUty1EK1LOoqtcaqcke04A7pwm3CPYASEM8Kbq96kqQ/s1Lqk2Jy0eveR1hlGWof4oN4hvVZqacI++RLFgh4N/XBY4OxdDc6E3lELKmjTOkf41aR0Ng7xgdYhHi3lcSJY0KMeG4IFNzOLKDpap/h9nSOMlqQ33FdMY7c4I9tV1N9VacIGbhI2Aak/a5yhypIUoH61qHGIngzpeebeEu9peoUvKW7x9/y5ov4tyYnHSE74m+KEiQVFMOAmwQBUS0++gZUqNc7QVo1d9GS+2iaxZyLMqq+7Gnv4SJ0dPKdKtjhHt6hra5yhfZRdeIHixEMUJ/pIVvgv+QnLpT5lSRZ0zV/rdKgSPzf5OnF2/HGslEk+CU48sVA69ZqbhFuOtOjSEDYhgbOSBluPUJz4CskJkZyieWRT830xuE14F1uv4OzdHSQHTpA2IUGuUpbIhgH/4rTwVcGjspjUcnf3kjZwjLAJobyiSdk0ABE0+J1gJj8u6cgsOJ2ogmJDTxOM8AFhE1wELdwgaEHGaTBN0GCKoIFA0OAGTgO2lp48tKLX4s1sZjPYSvI/ZkYDkohpw24AAAAASUVORK5CYII="
+                  alt="icono de resetear filtros"
+                  className="h-5 w-5"
+                />
+              }
+              sx={{
+                backgroundColor: '#1976d2', // Color azul Material UI
+                '&:hover': {
+                  backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
+                },
+                textTransform: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                marginLeft: '8px', // Añade un margen a la izquierda para separarlo del botón anterior
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                fontSize: '0.875rem',
+              }}
+            >
+              Resetear filtros
+            </Button>
           </div>
         </div>
 
@@ -862,8 +944,8 @@ function RhAdmin() {
                       id_Usuario
                     </th>
                     {/* Agrega esta nueva columna */}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Acciones
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b w-32">
+                      ACCIONES
                     </th>
                   </tr>
                 </thead>
@@ -906,15 +988,30 @@ function RhAdmin() {
 
                       {/* Nueva celda con botón de editar */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <button
+                        <Button
+                          variant="contained"
                           onClick={() => openEditEmployeeModal(employee)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-xs flex items-center space-x-1"
+                          startIcon={
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: '#1976d2',
+                            '&:hover': {
+                              backgroundColor: '#1565c0',
+                            },
+                            textTransform: 'none',
+                            padding: '7px 10px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            minWidth: 'unset',
+                            lineHeight: 1.2,
+                          }}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          <span>Editar</span>
-                        </button>
+                          Editar
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -969,11 +1066,12 @@ function RhAdmin() {
         </div>
 
         {/* Modal para agregar empleado */}
+        {/* Modal para agregar empleado */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl overflow-auto max-h-[90vh]">
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-2">
                     <User className="h-6 w-6 text-blue-700" />
                     <h2 className="text-xl font-semibold text-blue-800">Ingresar Nuevo Empleado</h2>
@@ -987,132 +1085,252 @@ function RhAdmin() {
                 </div>
 
                 <form onSubmit={handleSubmitForm}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-
+                  {/* Primera fila - Nombre, Apellido, Agencia */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     {/* Nombre */}
                     <div>
-                      <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
+                      <TextField
                         id="nombre"
+                        label="Nombre"
+                        variant="outlined"
                         name="nombre"
+                        fullWidth
                         required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         value={formData.nombre}
-                        onChange={handleFormChange}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                          setFormData({
+                            ...formData,
+                            nombre: e.target.value
+                          });
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#1976d2',
+                          }
+                        }}
                       />
                     </div>
 
                     {/* Apellido */}
                     <div>
-                      <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
+                      <TextField
                         id="apellido"
+                        label="Apellido"
+                        variant="outlined"
                         name="apellido"
+                        fullWidth
                         required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         value={formData.apellido}
-                        onChange={handleFormChange}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                          setFormData({
+                            ...formData,
+                            apellido: e.target.value
+                          });
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#1976d2',
+                          }
+                        }}
                       />
                     </div>
 
                     {/* Agencia */}
                     <div>
-                      <label htmlFor="agencia" className="block text-sm font-medium text-gray-700 mb-1">
-                        Agencia
-                      </label>
-                      <select
-                        id="agencia"
-                        name="agencia"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.agencia}
-                        onChange={handleFormChange}
-                      >
-                        <option value="">Seleccionar agencia</option>
-                        {AGENCIAS.map((agencia) => (
-                          <option key={agencia} value={agencia}>
-                            {agencia}
-                          </option>
-                        ))}
-                      </select>
+                      <FormControl fullWidth>
+                        <InputLabel id="agencia-select-label">Agencia</InputLabel>
+                        <Select
+                          labelId="agencia-select-label"
+                          id="agencia"
+                          name="agencia"
+                          value={formData.agencia}
+                          label="Agencia"
+                          onChange={(e: SelectChangeEvent) => {
+                            setFormData({
+                              ...formData,
+                              agencia: e.target.value
+                            });
+                          }}
+                          required
+                          sx={{
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#1976d2',
+                            }
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Seleccionar agencia</em>
+                          </MenuItem>
+                          {AGENCIAS.map((agencia) => (
+                            <MenuItem key={agencia} value={agencia}>
+                              {agencia}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </div>
+                  </div>
 
-                    {/* Fecha de Nacimiento */}
-                    <div>
-                      <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
-                        Fecha de Nacimiento
-                      </label>
-                      <input
-                        type="date"
-                        id="fechaNacimiento"
-                        name="fechaNacimiento"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.fechaNacimiento}
-                        onChange={handleFormChange}
-                      />
-                    </div>
+                  {/* Segunda fila - Fecha Nacimiento, Fecha Alta, Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale="es" // Configurar el adaptador en español
+                      localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                    >
+                      {/* Fecha de Nacimiento */}
+                      <div>
+                        <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-2">
+                          Fecha de Nacimiento
+                        </label>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={formData.fechaNacimiento ? dayjs(formData.fechaNacimiento) : null}
+                          onChange={(newValue) => {
+                            const formattedValue = newValue ? newValue.format('YYYY-MM-DD') : '';
+                            handleFormChange({
+                              target: { name: 'fechaNacimiento', value: formattedValue }
+                            } as any);
+                          }}
+                          slotProps={{
+                            textField: {
+                              id: 'fechaNacimiento',
+                              name: 'fechaNacimiento',
+                              required: true,
+                              fullWidth: true,
+                              variant: 'outlined',
+                              placeholder: "DD/MM/YYYY",
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#1976d2',
+                                  },
+                                },
+                              }
+                            },
+                          }}
+                        />
+                      </div>
 
-                    {/* Fecha de Alta */}
-                    <div>
-                      <label htmlFor="fechaAlta" className="block text-sm font-medium text-gray-700 mb-1">
-                        Fecha de Alta
-                      </label>
-                      <input
-                        type="date"
-                        id="fechaAlta"
-                        name="fechaAlta"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.fechaAlta}
-                        onChange={handleFormChange}
-                      />
-                    </div>
+                      {/* Fecha de Alta */}
+                      <div>
+                        <label htmlFor="fechaAlta" className="block text-sm font-medium text-gray-700 mb-2">
+                          Fecha de Alta
+                        </label>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={formData.fechaAlta ? dayjs(formData.fechaAlta) : null}
+                          onChange={(newValue) => {
+                            const formattedValue = newValue ? newValue.format('YYYY-MM-DD') : '';
+                            handleFormChange({
+                              target: { name: 'fechaAlta', value: formattedValue }
+                            } as any);
+                          }}
+                          slotProps={{
+                            textField: {
+                              id: 'fechaAlta',
+                              name: 'fechaAlta',
+                              required: true,
+                              fullWidth: true,
+                              variant: 'outlined',
+                              placeholder: "DD/MM/YYYY",
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#1976d2',
+                                  },
+                                },
+                              }
+                            },
+                          }}
+                        />
+                      </div>
+                    </LocalizationProvider>
 
                     {/* Status */}
                     <div>
-                      <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                         Status
                       </label>
-                      <select
-                        id="status"
-                        name="status"
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.status}
-                        onChange={handleFormChange}
-                      >
-                        <option value="SI">SI</option>
-                        <option value="NO">NO</option>
-                      </select>
+                      <FormControl fullWidth>
+                        <Select
+                          id="status"
+                          name="status"
+                          value={formData.status}
+                          onChange={(event: SelectChangeEvent<string>) => {
+                            const { name, value } = event.target;
+                            setFormData((prevFormData) => ({
+                              ...prevFormData,
+                              [name]: value,
+                            }));
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '' },
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                          }}
+                        >
+                          <MenuItem value="SI">SI</MenuItem>
+                          <MenuItem value="NO">NO</MenuItem>
+                        </Select>
+                      </FormControl>
                     </div>
-
-                    {/* URL de Foto */}
-                    <div>
-                      <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-1">
-                        URL de Foto (Google Drive)
-                      </label>
-                      <input
-                        type="text"
-                        id="photo"
-                        name="photo"
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={formData.photo}
-                        onChange={handleFormChange}
-                        placeholder="https://drive.google.com/file/d/..."
-                      />
-                    </div>
-
-                    {/* ID de Usuario - NUEVO CAMPO */}
-
                   </div>
 
+                  {/* Tercera fila - URL de Foto */}
+                  <div className="mb-6">
+                    <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-2">
+                      URL de Foto (Google Drive Opcional)
+                    </label>
+                    <TextField
+                      id="photo"
+                      name="photo"
+                      fullWidth
+                      placeholder="https://drive.google.com/file/d/..."
+                      value={formData.photo}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                        setFormData({
+                          ...formData,
+                          photo: e.target.value
+                        });
+                      }}
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: '#1976d2',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#1976d2',
+                          },
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Botones */}
                   <div className="mt-6 flex justify-end space-x-3">
                     <button
                       type="button"
@@ -1123,24 +1341,40 @@ function RhAdmin() {
                       Cancelar
                     </button>
 
-                    <button
+                    <Button
                       type="submit"
-                      className="px-4 py-2 bg-[#493F91] text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                      variant="contained"
+                      sx={{
+                        backgroundColor: '#1976d2', // Color azul de Material UI
+                        '&:hover': {
+                          backgroundColor: '#1565c0', // Un tono más oscuro para el hover
+                        },
+                        textTransform: 'none', // Para mantener el texto con mayúsculas/minúsculas como está
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                      startIcon={
+                        <img
+                          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII="
+                          alt="save--v1"
+                          className="h-5 w-5"
+                        />
+                      }
                     >
-
-                      <img
-                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII=" alt="save--v1"
-                        className="h-4 w-4 mr-2"
-                      />
-                      Ingresar Empleado
-                    </button>
+                      Guardar Cambios
+                    </Button>
                   </div>
                 </form>
               </div>
             </div>
           </div>
         )}
-        {/* Modal para agregar administrador */}
+
         {/* Modal para gestión de administradores */}
         {showAdminModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1173,7 +1407,6 @@ function RhAdmin() {
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Admin</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Agencia</th>
@@ -1183,7 +1416,7 @@ function RhAdmin() {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {loadingUsers ? (
                             <tr>
-                              <td colSpan={7} className="px-6 py-4 text-center">
+                              <td colSpan={6} className="px-6 py-4 text-center">
                                 <div className="flex justify-center">
                                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-700"></div>
                                 </div>
@@ -1191,7 +1424,7 @@ function RhAdmin() {
                             </tr>
                           ) : users.length === 0 ? (
                             <tr>
-                              <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                              <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                                 No hay usuarios registrados
                               </td>
                             </tr>
@@ -1200,27 +1433,47 @@ function RhAdmin() {
                               <tr key={user.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.admin === 'Sí' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                    {user.admin}
-                                  </span>
-                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{`${user.name} ${user.last_name}`}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.agency || '-'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                                  <button
+                                  <Button
+                                    variant="contained"
                                     onClick={() => openEditModal(user)}
-                                    className="text-white bg-purple-900 hover:bg-purple-700 py-1 px-3 rounded-md text-xs"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: '#1976d2', // Color azul como el de Agregar Empleado
+                                      '&:hover': {
+                                        backgroundColor: '#1565c0', // Un tono más oscuro para el hover
+                                      },
+                                      textTransform: 'none',
+                                      padding: '4px 10px',
+                                      borderRadius: '4px',
+                                      fontSize: '0.75rem',
+                                      minWidth: 'unset',
+                                      marginRight: '8px'
+                                    }}
                                   >
                                     Editar
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="contained"
                                     onClick={() => handleDeleteUser(user.id)}
-                                    className="text-white bg-red-600 hover:bg-red-700 py-1 px-3 rounded-md text-xs"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: '#dc2626', // Color rojo
+                                      '&:hover': {
+                                        backgroundColor: '#b91c1c', // Un tono más oscuro para el hover
+                                      },
+                                      textTransform: 'none',
+                                      padding: '4px 10px',
+                                      borderRadius: '4px',
+                                      fontSize: '0.75rem',
+                                      minWidth: 'unset'
+                                    }}
                                   >
                                     Eliminar
-                                  </button>
+                                  </Button>
                                 </td>
                               </tr>
                             ))
@@ -1239,87 +1492,151 @@ function RhAdmin() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Nombre */}
                       <div>
-                        <label htmlFor="adminNombre" className="block text-sm font-medium text-gray-700 mb-1">
-                          Nombre
-                        </label>
-                        <input
-                          type="text"
+                        <TextField
                           id="adminNombre"
+                          label="Nombre"
+                          variant="outlined"
                           name="nombre"
+                          fullWidth
                           required
-                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           value={adminFormData.nombre}
                           onChange={handleAdminFormChange}
+                          sx={{
+                            marginBottom: 2,
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#1976d2',
+                            }
+                          }}
                         />
                       </div>
 
                       {/* Apellido */}
                       <div>
-                        <label htmlFor="adminApellido" className="block text-sm font-medium text-gray-700 mb-1">
-                          Apellido
-                        </label>
-                        <input
-                          type="text"
+                        <TextField
                           id="adminApellido"
+                          label="Apellido"
+                          variant="outlined"
                           name="apellido"
+                          fullWidth
                           required
-                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           value={adminFormData.apellido}
                           onChange={handleAdminFormChange}
+                          sx={{
+                            marginBottom: 2,
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#1976d2',
+                            }
+                          }}
                         />
                       </div>
 
                       {/* Correo */}
                       <div>
-                        <label htmlFor="adminCorreo" className="block text-sm font-medium text-gray-700 mb-1">
-                          Correo Electrónico
-                        </label>
-                        <input
-                          type="email"
+                        <TextField
                           id="adminCorreo"
+                          label="Correo Electrónico"
+                          variant="outlined"
                           name="correo"
+                          type="email"
+                          fullWidth
                           required
-                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           value={adminFormData.correo}
                           onChange={handleAdminFormChange}
+                          sx={{
+                            marginBottom: 2,
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#1976d2',
+                            }
+                          }}
                         />
                       </div>
 
                       {/* Contraseña */}
                       <div>
-                        <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                          {isEditing ? 'Nueva Contraseña (dejar en blanco para mantener)' : 'Contraseña'}
-                        </label>
-                        <input
-                          type="password"
+                        <TextField
                           id="adminPassword"
+                          label={isEditing ? 'Nueva Contraseña (dejar en blanco para mantener)' : 'Contraseña'}
+                          variant="outlined"
                           name="password"
+                          type="password"
+                          fullWidth
                           required={!isEditing}
-                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           value={adminFormData.password}
                           onChange={handleAdminFormChange}
+                          sx={{
+                            marginBottom: 2,
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: '#1976d2',
+                              },
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: '#1976d2',
+                            }
+                          }}
                         />
                       </div>
 
-                      {/* Agencia */}
+                      {/* Agencia - Con Select de Material UI */}
                       <div>
-                        <label htmlFor="adminAgencia" className="block text-sm font-medium text-gray-700 mb-1">
-                          Agencia
-                        </label>
-                        <select
-                          id="adminAgencia"
-                          name="agencia"
-                          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                          value={adminFormData.agencia}
-                          onChange={handleAdminFormChange}
-                        >
-                          <option value="">Seleccionar agencia</option>
-                          {AGENCIAS.map((agencia) => (
-                            <option key={agencia} value={agencia}>
-                              {agencia}
-                            </option>
-                          ))}
-                        </select>
+                        <FormControl fullWidth sx={{ marginBottom: 2 }}>
+                          <InputLabel id="adminAgencia-label">Agencia</InputLabel>
+                          <Select
+                            labelId="adminAgencia-label"
+                            id="adminAgencia"
+                            name="agencia"
+                            value={adminFormData.agencia}
+                            label="Agencia"
+                            onChange={handleAdminFormChange}
+                            sx={{
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '',
+                              },
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#1976d2',
+                              },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#1976d2',
+                              }
+                            }}
+                          >
+                            <MenuItem value="">
+                              <em>Seleccionar agencia</em>
+                            </MenuItem>
+                            {AGENCIAS.map((agencia) => (
+                              <MenuItem key={agencia} value={agencia}>
+                                {agencia}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       </div>
                     </div>
 
@@ -1343,16 +1660,30 @@ function RhAdmin() {
                         Cancelar
                       </button>
 
-                      <button
+                      <Button
                         type="submit"
-                        className="px-4 py-2 bg-[#493F91] text-white rounded-md text-sm font-medium hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
+                        variant="contained"
+                        startIcon={
+                          <img
+                            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII="
+                            alt="save--v1"
+                            className="h-4 w-4"
+                          />
+                        }
+                        sx={{
+                          backgroundColor: '#1565c0', // El color morado original
+                          '&:hover': {
+                            backgroundColor: '#1565c0', // Un tono más oscuro para el hover
+                          },
+                          textTransform: 'none',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                          fontSize: '0.875rem',
+                        }}
                       >
-                        <img
-                          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7ElEQVR4nO2WsQrCMBRF8zVC3ZQ39C8c/R3BxbWTb7X+gJsU1EWEbrGDINRd/6BjRESoEJDaJCb1HrhzOdz7aIQAAAAvIS7VK9Ek02a1OxgL1b5H83IWtgAbkDAt0BvGb/kowC0lvBDgFhLeCPCXEl4JcKkgEKGBGBNqRP2A+tOtdkKL9d7ITyzNcrtHPEgKrcQo2bSWSLNcjZcnuwI+RECA0YDChJrQqSMubpVyzfFamRP4FQQB1jcgzxcrcdZA8AKuIAhwRyckQxdwBUGAOzohGbqAKwgC/Gzg8bR1jTT5nPYh4u8EAABAuOAOASTBaeDBltsAAAAASUVORK5CYII=" alt="save--v1"
-                          className="h-4 w-4 mr-2"
-                        />
                         {isEditing ? 'Actualizar Usuario' : 'Registrar Usuario'}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </div>
@@ -1520,7 +1851,7 @@ function RhAdmin() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl overflow-auto max-h-[90vh]">
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-2">
                     <User className="h-6 w-6 text-purple-700" />
                     <h2 className="text-xl font-semibold text-gray-800">Editar Empleado</h2>
@@ -1534,141 +1865,265 @@ function RhAdmin() {
                 </div>
 
                 <form onSubmit={handleSaveEditEmployee}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Primera fila - Nombre, Apellido, Agencia */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     {/* Nombre */}
                     <div>
-                      <label htmlFor="edit-nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
+                      <TextField
                         id="edit-nombre"
+                        label="Nombre"
+                        variant="outlined"
                         name="name"
+                        fullWidth
                         required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         value={editEmployeeData.name}
-                        onChange={handleEditEmployeeChange}
+                        onChange={handleEditEmployeeChange as any}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#1976d2',
+                          }
+                        }}
                       />
                     </div>
 
                     {/* Apellido */}
                     <div>
-                      <label htmlFor="edit-apellido" className="block text-sm font-medium text-gray-700 mb-1">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
+                      <TextField
                         id="edit-apellido"
+                        label="Apellido"
+                        variant="outlined"
                         name="last_name"
+                        fullWidth
                         required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         value={editEmployeeData.last_name}
-                        onChange={handleEditEmployeeChange}
+                        onChange={handleEditEmployeeChange as any}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#1976d2',
+                          }
+                        }}
                       />
                     </div>
 
                     {/* Agencia */}
                     <div>
-                      <label htmlFor="edit-agencia" className="block text-sm font-medium text-gray-700 mb-1">
-                        Agencia
-                      </label>
-                      <select
-                        id="edit-agencia"
-                        name="agency"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData.agency}
-                        onChange={handleEditEmployeeChange}
-                      >
-                        <option value="">Seleccionar agencia</option>
-                        {AGENCIAS.map((agencia) => (
-                          <option key={agencia} value={agencia}>
-                            {agencia}
-                          </option>
-                        ))}
-                      </select>
+                      <FormControl fullWidth>
+                        <InputLabel id="edit-agencia-label">Agencia</InputLabel>
+                        <Select
+                          labelId="edit-agencia-label"
+                          id="edit-agencia"
+                          name="agency"
+                          value={editEmployeeData.agency}
+                          label="Agencia"
+                          onChange={handleEditEmployeeChange as any}
+                          required
+                          sx={{
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#1976d2',
+                            },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Seleccionar agencia</em>
+                          </MenuItem>
+                          {AGENCIAS.map((agencia) => (
+                            <MenuItem key={agencia} value={agencia}>
+                              {agencia}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </div>
+                  </div>
 
-                    {/* Fecha de Nacimiento */}
-                    <div>
-                      <label htmlFor="edit-fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
-                        Fecha de Nacimiento
-                      </label>
-                      <input
-                        type="date"
-                        id="edit-fechaNacimiento"
-                        name="date_of_birth"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData.date_of_birth}
-                        onChange={handleEditEmployeeChange}
-                      />
-                    </div>
+                  {/* Segunda fila - Fechas y Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale="es"
+                      localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                    >
+                      {/* Fecha de Nacimiento */}
+                      <div>
+                        <label htmlFor="edit-fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-2">
+                          Fecha de Nacimiento
+                        </label>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={editEmployeeData.date_of_birth ? dayjs(editEmployeeData.date_of_birth) : null}
+                          onChange={(newValue) => {
+                            const formattedValue = newValue ? newValue.format('YYYY-MM-DD') : '';
+                            handleEditEmployeeChange({
+                              target: { name: 'date_of_birth', value: formattedValue }
+                            } as any);
+                          }}
+                          slotProps={{
+                            textField: {
+                              id: 'edit-fechaNacimiento',
+                              name: 'date_of_birth',
+                              required: true,
+                              fullWidth: true,
+                              variant: 'outlined',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#1976d2',
+                                  },
+                                },
+                              }
+                            },
+                          }}
+                        />
+                      </div>
 
-                    {/* Fecha de Alta */}
-                    <div>
-                      <label htmlFor="edit-fechaAlta" className="block text-sm font-medium text-gray-700 mb-1">
-                        Fecha de Alta
-                      </label>
-                      <input
-                        type="date"
-                        id="edit-fechaAlta"
-                        name="high_date"
-                        required
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData.high_date}
-                        onChange={handleEditEmployeeChange}
-                      />
-                    </div>
+                      {/* Fecha de Alta */}
+                      <div>
+                        <label htmlFor="edit-fechaAlta" className="block text-sm font-medium text-gray-700 mb-2">
+                          Fecha de Alta
+                        </label>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={editEmployeeData.high_date ? dayjs(editEmployeeData.high_date) : null}
+                          onChange={(newValue) => {
+                            const formattedValue = newValue ? newValue.format('YYYY-MM-DD') : '';
+                            handleEditEmployeeChange({
+                              target: { name: 'high_date', value: formattedValue }
+                            } as any);
+                          }}
+                          slotProps={{
+                            textField: {
+                              id: 'edit-fechaAlta',
+                              name: 'high_date',
+                              required: true,
+                              fullWidth: true,
+                              variant: 'outlined',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#1976d2',
+                                  },
+                                },
+                              }
+                            },
+                          }}
+                        />
+                      </div>
 
-                    {/* Status */}
-                    <div>
-                      <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
-                      <select
-                        id="edit-status"
-                        name="status"
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData.status}
-                        onChange={handleEditEmployeeChange}
-                      >
-                        <option value="SI">SI</option>
-                        <option value="NO">NO</option>
-                      </select>
-                    </div>
+                      {/* Status - con el mismo formato de label que las fechas */}
+                      <div>
+                        <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-2">
+                          Status
+                        </label>
+                        <FormControl fullWidth>
+                          <Select
+                            id="edit-status"
+                            name="status"
+                            value={editEmployeeData.status}
+                            onChange={handleEditEmployeeChange as any}
+                            sx={{
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '' },
+                              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                            }}
+                          >
+                            <MenuItem value="SI">SI</MenuItem>
+                            <MenuItem value="NO">NO</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </LocalizationProvider>
+                  </div>
 
-                    <div>
-                      <label htmlFor="edit-fechaBaja" className="block text-sm font-medium text-gray-700 mb-1">
-                        Fecha de Baja
-                      </label>
-                      <input
-                        type="date"
-                        id="edit-fechaBaja"
-                        name="low_date"
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData?.low_date || ''}
-                        onChange={handleEditEmployeeChange}
-                      />
-                    </div>
+                  {/* Tercera fila - Fecha de Baja y URL de Foto */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale="es"
+                      localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                    >
+                      {/* Fecha de Baja */}
+                      <div>
+                        <label htmlFor="edit-fechaBaja" className="block text-sm font-medium text-gray-700 mb-2">
+                          Fecha de Baja
+                        </label>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          value={editEmployeeData?.low_date ? dayjs(editEmployeeData.low_date) : null}
+                          onChange={(newValue) => {
+                            const formattedValue = newValue ? newValue.format('YYYY-MM-DD') : '';
+                            handleEditEmployeeChange({
+                              target: { name: 'low_date', value: formattedValue }
+                            } as any);
+                          }}
+                          slotProps={{
+                            textField: {
+                              id: 'edit-fechaBaja',
+                              name: 'low_date',
+                              fullWidth: true,
+                              variant: 'outlined',
+                              sx: {
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#1976d2',
+                                  },
+                                },
+                              }
+                            },
+                          }}
+                        />
+                      </div>
+                    </LocalizationProvider>
 
                     {/* URL de Foto */}
                     <div>
-                      <label htmlFor="edit-photo" className="block text-sm font-medium text-gray-700 mb-1">
-                        URL de Foto (Google Drive)
+                      <label htmlFor="edit-photo" className="block text-sm font-medium text-gray-700 mb-2">
+                        URL de Foto (Google Drive Opcional)
                       </label>
-                      <input
-                        type="text"
+                      <TextField
                         id="edit-photo"
                         name="photo"
-                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        value={editEmployeeData.photo || ''}
-                        onChange={handleEditEmployeeChange}
+                        fullWidth
                         placeholder="https://drive.google.com/file/d/..."
+                        value={editEmployeeData?.photo || ''}
+                        onChange={handleEditEmployeeChange as any}
+                        variant="outlined"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#1976d2',
+                            },
+                          }
+                        }}
                       />
                     </div>
                   </div>
 
+                  {/* Botones */}
                   <div className="mt-6 flex justify-end space-x-3">
                     <button
                       type="button"
