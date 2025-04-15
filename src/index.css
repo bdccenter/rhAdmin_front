@@ -27,9 +27,114 @@
 }
 
 .animate-fade-in-down {
-  animation: fadeInDown 0.3s ease-out forwards;
+  animation: fadeInDown 2.3s ease-out forwards;
 }
 
 .animate-fade-out-up {
-  animation: fadeOutUp 0.3s ease-in forwards;
+  animation: fadeOutUp 1.3s ease-in forwards;
+}
+
+
+/* Modifica estos valores en tu archivo index.css */
+
+.page-transition-enter {
+  animation: fadeIn 3.8s ease-out forwards; /* Aumentado de 0.5s a 0.8s */
+}
+
+.page-content {
+  animation: slideIn 3s ease-out forwards; /* Aumentado de 0.6s a 1s */
+}
+
+.loading-screen {
+  transition: opacity 2.8s ease-out; /* Aumentado de 0.5s a 0.8s */
+}
+
+/* También puedes ajustar la velocidad de las animaciones de spinners */
+.loading-spinner {
+  animation: spin 3.5s linear infinite; /* Aumentado de 1s a 1.5s para una rotación más lenta */
+}
+
+/* Añade estas animaciones para transiciones de página a tu archivo index.css */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.page-transition-enter {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.page-content {
+  animation: slideIn 0.6s ease-out forwards;
+}
+
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.5s ease-out;
+}
+
+.loading-screen.fade-out {
+  opacity: 0;
+}
+
+.loading-logo {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1rem;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(73, 63, 145, 0.3);
+  border-radius: 50%;
+  border-top-color: #493F91;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  color: #4B5563;
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }

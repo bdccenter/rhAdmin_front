@@ -103,6 +103,7 @@ const convertGoogleDriveUrl = (url: string): string => {
 };
 
 function RhAdmin() {
+  const [isLoading, setIsLoading] = useState(false);
   // Auth Context para funcionalidad de logout
   const { logout, user } = useAuth();
   const { showNotification } = useNotification();
@@ -439,6 +440,17 @@ function RhAdmin() {
     }
   };
 
+  // Aplica la carga inicial al montar el componente
+  useEffect(() => {
+    setIsLoading(true);
+
+    // Simular tiempo de carga para una transición suave
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // 1.5 segundos de carga
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Cargar usuarios cuando se abre el modal de administrador
   useEffect(() => {
@@ -646,8 +658,18 @@ function RhAdmin() {
     });
   };
 
+  
   return (
+    
+    
     <div className="min-h-screen bg-gray-50">
+      {isLoading && (
+      <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        
+        <div className="w-12 h-12 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-700 text-lg font-medium">Cargando sistema...</p>
+      </div>
+    )}
       {/* Header */}
       <div className="text-white p-4" style={{ backgroundColor: '#493F91' }}>
         <div className="container mx-auto flex items-center justify-between">
