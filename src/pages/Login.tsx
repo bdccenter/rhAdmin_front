@@ -86,9 +86,9 @@ const Login = () => {
                                         borderColor: '#6B7280',
                                     },
                                     '&.Mui-focused fieldset': {
-                                        borderColor: '#493F91',
+                                        borderColor: '#white',
                                     },
-                                    backgroundColor: email ? '#E0F7FF' : '#1F2937',
+                                    backgroundColor: email ? '#white' : '#1F2937',
                                     transition: 'background-color 0.3s ease',
                                 },
                                 '& .MuiInputLabel-root': {
@@ -130,9 +130,9 @@ const Login = () => {
                                         borderColor: '#6B7280',
                                     },
                                     '&.Mui-focused fieldset': {
-                                        borderColor: '#493F91',
+                                        borderColor: '#white',
                                     },
-                                    backgroundColor: password ? '#E0F7FF' : '#1F2937',
+                                    backgroundColor: password ? '#white' : '#1F2937',
                                     transition: 'background-color 0.3s ease',
                                 },
                                 '& .MuiInputLabel-root': {
@@ -202,11 +202,7 @@ const Login = () => {
             {isLoading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-                        <img
-                            src="/img/AUTO_INSIGHTS-04.jpg"
-                            alt="Auto Insights Logo"
-                            className="h-16 w-32 mb-4"
-                        />
+                        
                         <div className="w-10 h-10 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mb-4"></div>
                         <p className="text-gray-700">Iniciando sesión...</p>
                     </div>

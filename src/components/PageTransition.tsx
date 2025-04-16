@@ -29,7 +29,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     return (
       <div className={`loading-screen ${isFadingOut ? 'fade-out' : ''}`}>
         <img 
-          src="./img/AUTO_INSIGHTS-04.jpg" 
+          src="./img/AUTO-INSIGHTS-10.png" 
           alt="Auto Insights Logo" 
           className="loading-logo"
         />

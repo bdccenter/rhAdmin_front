@@ -973,9 +973,7 @@ function RhAdmin() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
 
-
-
-
+                  {/* Mapeo de empleados */}
                   {currentEmployees.map((employee, index) => (
                     <tr key={`${employee.id}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100'}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
