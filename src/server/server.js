@@ -34,13 +34,14 @@ const pool = mysql.createPool(dbConfig);
 
 // Ruta para autenticar usuarios
 app.post('/api/auth/login', async (req, res) => {
+  // Ruta para autenticar usuarios
   try {
     const { email, password } = req.body;
-
+    // Validar que se proporcionen email y contraseña
     if (!email || !password) {
       return res.status(400).json({ message: 'Email y contraseña son requeridos' });
     }
-
+    // Conectar a la base de datos
     const connection = await pool.getConnection();
 
     // Consultar el usuario por email
@@ -49,18 +50,18 @@ app.post('/api/auth/login', async (req, res) => {
       FROM Users 
       WHERE email = ?
     `, [email]);
-
+    // Liberar la conexión después de usarla
     connection.release();
-
+    // Verificar si se encontró el usuario
     if (users.length === 0) {
       return res.status(401).json({ message: 'Credenciales incorrectas' });
     }
-
+    // Obtener el primer usuario (asumiendo que el email es único)
     const user = users[0];
 
     // Verificar la contraseña - usando MD5 como en tu script SQL
     const hashedPassword = crypto.createHash('md5').update(password).digest('hex');
-
+    // Comparar la contraseña proporcionada con la almacenada en la base de datos
     if (user.password !== hashedPassword) {
       return res.status(401).json({ message: 'Credenciales incorrectas' });
     }
@@ -74,8 +75,6 @@ app.post('/api/auth/login', async (req, res) => {
       agency: user.agency
     };
 
-    // En un sistema real, aquí generarías un JWT
-    // Por ahora usamos un token simple
     const token = crypto.randomBytes(64).toString('hex');
 
     res.json({
@@ -91,10 +90,12 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Ruta para obtener todos los empleados
 app.get('/api/employees', async (req, res) => {
+  // Ruta para obtener todos los empleados
   try {
     const connection = await pool.getConnection();
 
     // Consulta para obtener los empleados con la información del usuario asociado
+    // Ahora incluimos la información de modificación
     const [rows] = await connection.query(`
       SELECT 
         e.id, 
@@ -107,7 +108,9 @@ app.get('/api/employees', async (req, res) => {
         DATE_FORMAT(e.low_date, '%d/%m/%Y') as low_date, 
         e.photo, 
         e.id_user,
-        u.email as user_email
+        u.email as user_email,
+        e.last_modified,
+        e.modified_by
       FROM Employees e
       JOIN Users u ON e.id_user = u.id
     `);
@@ -117,7 +120,9 @@ app.get('/api/employees', async (req, res) => {
     // Convertir fechas a formato adecuado y manejar valores nulos
     const formattedEmployees = rows.map(employee => ({
       ...employee,
-      low_date: employee.low_date || null
+      low_date: employee.low_date || null,
+      last_modified: employee.last_modified ? new Date(employee.last_modified).toISOString() : null,
+      modified_by: employee.modified_by || null
     }));
 
     res.json(formattedEmployees);
@@ -131,8 +136,8 @@ app.get('/api/employees', async (req, res) => {
 app.get('/api/employees/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    // Validar que el ID sea un número
     const connection = await pool.getConnection();
-
     const [rows] = await connection.query(`
       SELECT 
         e.id, 
@@ -145,23 +150,27 @@ app.get('/api/employees/:id', async (req, res) => {
         DATE_FORMAT(e.low_date, '%d/%m/%Y') as low_date, 
         e.photo, 
         e.id_user,
-        u.email as user_email
+        u.email as user_email,
+        e.last_modified,
+        e.modified_by
       FROM Employees e
       JOIN Users u ON e.id_user = u.id
       WHERE e.id = ?
     `, [id]);
-
+    // Liberar la conexión después de usarla
     connection.release();
-
+    // Verificar si se encontró el empleado
     if (rows.length === 0) {
       return res.status(404).json({ message: 'Empleado no encontrado' });
     }
-
+    // Obtener el primer empleado (asumiendo que el ID es único)
     res.json({
       ...rows[0],
-      low_date: rows[0].low_date || null
-    });
-  } catch (error) {
+      low_date: rows[0].low_date || null,
+      last_modified: rows[0].last_modified ? new Date(rows[0].last_modified).toISOString() : null,
+      modified_by: rows[0].modified_by || null
+    }); // Convertir fechas a formato adecuado y manejar valores nulos
+  } catch (error) { // Validar errores
     console.error('Error al obtener empleado:', error);
     res.status(500).json({ message: 'Error al obtener datos del empleado', error: error.message });
   }
@@ -169,6 +178,7 @@ app.get('/api/employees/:id', async (req, res) => {
 
 // Ruta para crear un nuevo usuario/administrador
 app.post('/api/users', async (req, res) => {
+  // Ruta para crear un nuevo usuario/administrador
   try {
     const { name, last_name, email, password, agency } = req.body;
 
@@ -221,6 +231,7 @@ app.get('/api/users', async (req, res) => {
       ORDER BY id DESC
     `);
 
+    // Liberar la conexión después de usarla
     connection.release();
 
     // No incluir las contraseñas en la respuesta por seguridad
@@ -237,8 +248,9 @@ app.get('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const connection = await pool.getConnection();
 
+    // Eliminamos 'admin' de la consulta
     const [users] = await connection.query(`
-      SELECT id, name, last_name, email, agency, admin
+      SELECT id, name, last_name, email, agency
       FROM Users
       WHERE id = ?
     `, [id]);
@@ -249,22 +261,26 @@ app.get('/api/users/:id', async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json(users[0]);
+    // Agregamos una propiedad 'admin' manualmente
+    const userWithAdmin = {
+      ...users[0],
+      admin: false // o 'No' para mantener consistencia con el código existente
+    };
+
+    res.json(userWithAdmin);
   } catch (error) {
     console.error('Error al obtener usuario:', error);
     res.status(500).json({ message: 'Error al obtener datos del usuario', error: error.message });
   }
 });
 
-
-
 // Ruta para actualizar un usuario existente
 app.put('/api/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, last_name, email, password, agency } = req.body;
-    // Eliminamos admin del destructuring ya que no existe la columna
 
+    // Eliminamos admin del destructuring ya que no existe la columna
     const connection = await pool.getConnection();
 
     // Verificar si el usuario existe
@@ -359,11 +375,13 @@ app.post('/api/employees', async (req, res) => {
       return res.status(400).json({ message: 'Todos los campos requeridos deben ser proporcionados' });
     }
 
+    // Validar que el id_user sea un número
     const connection = await pool.getConnection();
 
     // Verificar si el id_user existe
     const [existingUsers] = await connection.query('SELECT id FROM Users WHERE id = ?', [id_user]);
 
+    // Verificar si el id_user existe
     if (existingUsers.length === 0) {
       connection.release();
       return res.status(404).json({ message: 'El usuario asociado no existe' });
@@ -387,7 +405,6 @@ app.post('/api/employees', async (req, res) => {
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 });
-
 
 // Ruta para actualizar un empleado existente
 app.put('/api/employees/:id', async (req, res) => {
@@ -425,7 +442,12 @@ app.put('/api/employees/:id', async (req, res) => {
       lowDateQuery = 'NULL';
     }
 
+    // Agregar registro de última modificación
+    const currentTime = new Date();
+    const formattedDate = currentTime.toISOString().slice(0, 19).replace('T', ' ');
+
     // Actualizar el empleado con manejo especial para la fecha de baja
+    // Ahora también guardamos la fecha de modificación y el usuario que modificó
     let query = `
       UPDATE Employees 
       SET name = ?, last_name = ?, agency = ?, 
@@ -433,26 +455,29 @@ app.put('/api/employees/:id', async (req, res) => {
       high_date = STR_TO_DATE(?, '%Y-%m-%d'), 
       status = ?, 
       low_date = ${lowDateQuery === 'NULL' ? 'NULL' : lowDateQuery}, 
-      photo = ?, id_user = ?
+      photo = ?, id_user = ?, 
+      last_modified = ?, 
+      modified_by = ?
       WHERE id = ?
     `;
 
+    // Si low_date es NULL, no lo incluimos en la consulta
     let params = [];
     if (lowDateQuery === 'NULL') {
-      params = [name, last_name, agency, date_of_birth, high_date, status, photo, id_user, id];
+      params = [name, last_name, agency, date_of_birth, high_date, status, photo, id_user, formattedDate, id_user, id];
     } else {
-      params = [name, last_name, agency, date_of_birth, high_date, status, low_date, photo, id_user, id];
+      params = [name, last_name, agency, date_of_birth, high_date, status, low_date, photo, id_user, formattedDate, id_user, id];
     }
-
+    // Ejecutar la consulta de actualización
     await connection.query(query, params);
 
     connection.release();
-
+    // Liberar la conexión después de usarla
     res.json({
       success: true,
       message: 'Empleado actualizado exitosamente'
     });
-  } catch (error) {
+  } catch (error) { // Validar errores
     console.error('Error al actualizar empleado:', error);
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
@@ -474,14 +499,15 @@ app.delete('/api/employees/:id', async (req, res) => {
 
     // Eliminar el empleado
     await connection.query('DELETE FROM Employees WHERE id = ?', [id]);
-
+    // Liberar la conexión después de usarla
     connection.release();
-
+    // Respuesta exitosa
     res.json({
       success: true,
       message: 'Empleado eliminado exitosamente'
     });
   } catch (error) {
+    // Manejo de errores
     console.error('Error al eliminar empleado:', error);
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }

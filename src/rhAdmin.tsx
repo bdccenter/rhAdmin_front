@@ -36,6 +36,8 @@ interface Employee {
   photo: string | null;
   id_user: number;
   user_email?: string;
+  last_modified?: string;
+  modified_by?: number;
 }
 
 interface NewAdminForm {
@@ -50,6 +52,7 @@ interface NewAdminForm {
 // Interfaz para empleados con URL de foto procesada
 interface ProcessedEmployee extends Employee {
   photoUrl: string;
+  modified_by_name?: string; // Nombre del usuario que modificó
 }
 
 // Interfaz para el formulario de nuevo empleado
@@ -103,10 +106,14 @@ const convertGoogleDriveUrl = (url: string): string => {
 };
 
 function RhAdmin() {
+  
+  // Estado para controlar la carga inicial
   const [isLoading, setIsLoading] = useState(false);
   // Auth Context para funcionalidad de logout
   const { logout, user } = useAuth();
+  // Notificación Context para mostrar mensajes
   const { showNotification } = useNotification();
+  // Navegación
   const navigate = useNavigate();
   // estado para controlar el modal de nuevo usuario o administrador
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
@@ -115,19 +122,19 @@ function RhAdmin() {
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  // Estado para controlar si estamos editando un usuario
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  // Estado para controlar si el usuario es superusuario
   const [isSuperuser, setIsSuperuser] = useState<boolean>(false);
 
   // Ref para controlar si ya se mostró la notificación
   const notificationShown = useRef(false);
-
+  // Estado para almacenar los datos del formulario de administrador
   const [editUserData, setEditUserData] = useState<any>(null);
   const [editEmployeeData, setEditEmployeeData] = useState<ProcessedEmployee | null>(null);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   // Agregar este nuevo estado
   const [showEditEmployeeModal, setShowEditEmployeeModal] = useState<boolean>(false);
-
-
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
   const [employeesData, setEmployeesData] = useState<ProcessedEmployee[]>([]);
@@ -140,8 +147,7 @@ function RhAdmin() {
   const [agencies, setAgencies] = useState<string[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
 
-
-
+  // Función para mostrar notificaciones
   const handleDeleteEmployee = async (employeeId: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este empleado? Esta acción no se puede deshacer.')) {
       try {
@@ -161,6 +167,7 @@ function RhAdmin() {
     }
   };
 
+  // 1. Función para abrir el modal de edición de empleado
   const openEditEmployeeModal = (employee: ProcessedEmployee) => {
     // Formatear las fechas para el input date (YYYY-MM-DD)
     const formatDateForInput = (dateStr: string) => {
@@ -170,6 +177,7 @@ function RhAdmin() {
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     };
 
+    // Establecer los datos del empleado a editar
     setEditEmployeeData({
       ...employee,
       date_of_birth: formatDateForInput(employee.date_of_birth),
@@ -197,8 +205,6 @@ function RhAdmin() {
     }
   };
 
-
-
   // 5. Función para guardar los cambios del empleado
   const handleSaveEditEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,18 +229,19 @@ function RhAdmin() {
         status: editEmployeeData.status,
         low_date: lowDate,
         photo: editEmployeeData.photo,
-        id_user: editEmployeeData.id_user
+        id_user: user?.id  // Usar el ID del usuario actual que está modificando
       };
 
       // Llamada a la API para actualizar el empleado
       const response = await axios.put(`${API_URL}/employees/${editEmployeeData.id}`, apiData);
 
+      // Verificar si la respuesta fue exitosa
       if (response.data.success) {
         showNotification('success', 'Empleado actualizado exitosamente');
         closeEditEmployeeModal();
         fetchEmployees(); // Recargar la lista de empleados
       }
-    } catch (err: any) {
+    } catch (err: any) { // Mostrar notificación de éxito
       const errorMessage = err.response?.data?.message || 'Error al actualizar empleado';
       showNotification('error', errorMessage);
       console.error('Error al actualizar empleado:', err);
@@ -265,6 +272,7 @@ function RhAdmin() {
   const handleSaveEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validar que los campos requeridos estén llenos
     try {
       await axios.put(`${API_URL}/users/${editUserData.id}`, {
         name: editUserData.nombre,
@@ -290,6 +298,7 @@ function RhAdmin() {
   const handleEditDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
+    // Si el tipo es checkbox, manejarlo como booleano
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setEditUserData({
@@ -320,12 +329,13 @@ function RhAdmin() {
 
   // Función para eliminar usuario
   const handleDeleteUser = async (userId: number) => {
+    // Confirmación antes de eliminar
     if (window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
-      try {
+      try { // Llamada a la API para eliminar usuario
         await axios.delete(`${API_URL}/users/${userId}`);
         showNotification('success', 'Usuario eliminado exitosamente');
         fetchUsers(); // Recargar la lista
-      } catch (err: any) {
+      } catch (err: any) { // Mostrar notificación de error
         const errorMessage = err.response?.data?.message || 'Error al eliminar usuario';
         showNotification('error', errorMessage);
         console.error('Error al eliminar usuario:', err);
@@ -336,7 +346,7 @@ function RhAdmin() {
   // Función para crear o actualizar usuario
   const handleSubmitAdminForm = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    // Validar que los campos requeridos estén llenos
     try {
       if (isEditing && selectedUserId) {
         // Actualizar usuario existente
@@ -348,7 +358,7 @@ function RhAdmin() {
           agency: adminFormData.agencia,
           admin: isSuperuser
         });
-
+        // Mostrar notificación de éxito
         showNotification('success', 'Usuario actualizado exitosamente');
       } else {
         // Crear nuevo usuario
@@ -363,7 +373,7 @@ function RhAdmin() {
         // 
         showNotification('success', 'Usuario creado exitosamente');
       }
-
+      // Cerrar el modal y recargar la lista de usuarios
       closeAdminModal();
       fetchUsers(); // Recargar la lista
     } catch (err: any) {
@@ -375,6 +385,7 @@ function RhAdmin() {
 
   // Función para abrir el modal en modo creación
   const openAdminModal = () => {
+    // Limpiar los datos del formulario
     setSelectedUserId(null);
     setIsEditing(false);
     setAdminFormData({
@@ -384,12 +395,14 @@ function RhAdmin() {
       password: '',
       agencia: ''
     });
+    // Limpiar el estado de superusuario
     setIsSuperuser(false);
     setShowAdminModal(true);
   };
 
   // Modificar closeAdminModal para resetear todo
   const closeAdminModal = () => {
+    // Limpiar los datos del formulario
     setShowAdminModal(false);
     setSelectedUserId(null);
     setIsEditing(false);
@@ -400,6 +413,7 @@ function RhAdmin() {
       password: '',
       agencia: ''
     });
+    // Limpiar el estado de superusuario
     setIsSuperuser(false);
   };
 
@@ -415,6 +429,7 @@ function RhAdmin() {
     idUsuario: ''
   });
 
+  // Estado para el formulario de nuevo administrador
   const [adminFormData, setAdminFormData] = useState<NewAdminForm>({
     nombre: '',
     apellido: '',
@@ -487,6 +502,7 @@ function RhAdmin() {
   };
 
   // Función para cargar los empleados desde la API
+  // Función para cargar los empleados desde la API
   const fetchEmployees = async () => {
     try {
       setLoading(true);
@@ -494,12 +510,29 @@ function RhAdmin() {
 
       const response = await axios.get(`${API_URL}/employees`);
 
-      // Procesar datos: convertir las URLs de fotos
-      const processedEmployees: ProcessedEmployee[] = response.data.map((employee: Employee) => ({
-        ...employee,
-        photoUrl: convertGoogleDriveUrl(employee.photo || '')
-      }));
-
+      // Procesar datos: convertir las URLs de fotos y obtener nombres de usuarios
+      const processedEmployees: ProcessedEmployee[] = await Promise.all(
+        response.data.map(async (employee: Employee) => {
+          // Intentar obtener el nombre del usuario que modificó si existe
+          let modifiedByName = '';
+          if (employee.modified_by) {
+            try {
+              const userResponse = await axios.get(`${API_URL}/users/${employee.modified_by}`);
+              modifiedByName = `${userResponse.data.name} ${userResponse.data.last_name}`;
+            } catch (error) {
+              console.error('Error al obtener usuario modificador:', error);
+              modifiedByName = `Usuario ID: ${employee.modified_by}`;
+            }
+          }
+          // Convertir la URL de la foto
+          return {
+            ...employee,
+            photoUrl: convertGoogleDriveUrl(employee.photo || ''),
+            modified_by_name: modifiedByName
+          };
+        })
+      );
+      // Establecer los datos procesados en el estado
       setEmployeesData(processedEmployees);
 
       // Extraer todas las agencias únicas para el filtro
@@ -536,7 +569,7 @@ function RhAdmin() {
 
     // Filtro por status
     const matchesStatus = selectedStatus === '' || employee.status === selectedStatus;
-
+    // Retornar true si el empleado cumple con todos los filtros
     return matchesNameSearch && matchesOtherSearch && matchesAgency && matchesStatus;
   });
 
@@ -550,11 +583,13 @@ function RhAdmin() {
 
   // Funciones de navegación
   const nextPage = () => {
+    // Si hay más páginas, incrementar la página actual
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
+  // Función para ir a la página anterior
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -658,18 +693,17 @@ function RhAdmin() {
     });
   };
 
-  
+
   return (
-    
-    
+    // Renderizar el componente
     <div className="min-h-screen bg-gray-50">
       {isLoading && (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        
-        <div className="w-12 h-12 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-700 text-lg font-medium">Cargando sistema...</p>
-      </div>
-    )}
+        <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+
+          <div className="w-12 h-12 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-700 text-lg font-medium">Cargando sistema...</p>
+        </div>
+      )}
       {/* Header */}
       <div className="text-white p-4" style={{ backgroundColor: '#493F91' }}>
         <div className="container mx-auto flex items-center justify-between">
@@ -963,7 +997,10 @@ function RhAdmin() {
                       Fecha de Baja
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      id_Usuario
+                      Usuario
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                      Última Modificación
                     </th>
                     {/* Agrega esta nueva columna */}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b w-32">
@@ -1005,7 +1042,16 @@ function RhAdmin() {
                         {employee.low_date || '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{employee.id_user}</td>
-
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {employee.last_modified ? (
+                          <div className="text-xs">
+                            <div>{new Date(employee.last_modified).toLocaleDateString()}</div>
+                            <div className="text-gray-500">Por: {employee.modified_by_name || employee.modified_by || '-'}</div>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       {/* Nueva celda con botón de editar */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <Button
@@ -1085,7 +1131,6 @@ function RhAdmin() {
           </div>
         </div>
 
-        {/* Modal para agregar empleado */}
         {/* Modal para agregar empleado */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1507,9 +1552,9 @@ function RhAdmin() {
                 {/* Formulario */}
                 <div className="bg-gray-50 p-6 rounded-md">
                   <h3 className="text-lg font-medium mb-4">{isEditing ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h3>
-
                   <form onSubmit={handleSubmitAdminForm}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
                       {/* Nombre */}
                       <div>
                         <TextField
@@ -1711,6 +1756,8 @@ function RhAdmin() {
             </div>
           </div>
         )}
+
+        {/* Modal para editar usuario */}
         {showEditModal && editUserData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-lg overflow-auto max-h-[90vh]">
