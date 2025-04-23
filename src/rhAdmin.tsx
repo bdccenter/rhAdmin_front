@@ -5,7 +5,6 @@ import { MdNextPlan } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useNotification } from './context/NotificationContext';
-import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -19,6 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es'; // Importar locale español
 import { esES } from '@mui/x-date-pickers/locales';
+
 
 dayjs.locale('es');
 
@@ -47,7 +47,6 @@ interface NewAdminForm {
   password: string;
   agencia: string;
 }
-
 
 // Interfaz para empleados con URL de foto procesada
 interface ProcessedEmployee extends Employee {
@@ -106,7 +105,7 @@ const convertGoogleDriveUrl = (url: string): string => {
 };
 
 function RhAdmin() {
-  
+
   // Estado para controlar la carga inicial
   const [isLoading, setIsLoading] = useState(false);
   // Auth Context para funcionalidad de logout
@@ -750,62 +749,13 @@ function RhAdmin() {
 
       {/* contenedor principal */}
       <div className="container mx-auto py-6 px-4">
-        <div className="flex justify-between items-center mb-6">
-          {/* Botón de Agregar Empleado */}
-          <Button
-            variant="contained"
-            onClick={openModal}
-            startIcon={
-              <img
-                src="data:image/png;base64,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"
-                alt="user-group-man-woman"
-                className="h-5 w-5"
-              />
-            }
-            sx={{
-              backgroundColor: '#1976d2', // Color azul similar al de tu botón original
-              '&:hover': {
-                backgroundColor: '#1565c0', // Un tono más oscuro para el hover
-              },
-              textTransform: 'none', // Para mantener el texto con mayúsculas/minúsculas como está
-              padding: '8px 16px',
-              borderRadius: '6px',
-            }}
-          >
-            Agregar Empleado
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={openAdminModal}
-            startIcon={
-              <img
-                src="data:image/png;base64,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"
-                alt="external-administrator-internet-of-things-itim2101-lineal-color-itim2101"
-                className="h-5 w-5"
-              />
-            }
-            sx={{
-              backgroundColor: '#1976d2', // Color azul Material UI
-              '&:hover': {
-                backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
-              },
-              textTransform: 'none', // Para mantener el texto con mayúsculas/minúsculas como está
-              padding: '8px 16px',
-              borderRadius: '6px',
-              fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-              fontSize: '0.875rem',
-            }}
-          >
-            Agregar Administrador
-          </Button>
-
-          {/* Filtros */}
-          <div className="flex flex-wrap justify-end items-end gap-4">
-            <div className="flex-grow-0 min-w-[180px]">
+        <div className="flex justify-start items-center mb-6">
+          {/* Todo el contenido ahora está alineado a la derecha con justify-end */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-32">
               <TextField
                 id="nameSearch"
-                label="Nombre"
+                label="Nombres"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -814,10 +764,10 @@ function RhAdmin() {
               />
             </div>
 
-            <div className="flex-grow-0 min-w-[160px]">
+            <div className="w-32">
               <TextField
                 id="otherSearch"
-                label="Apellido"
+                label="Apellidos"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -826,124 +776,168 @@ function RhAdmin() {
               />
             </div>
 
-            <div className="flex-grow-0 min-w-[180px]">
-              <Box sx={{ minWidth: 120, width: '100%' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="agency-select-label">Agencia</InputLabel>
-                  <Select
-                    labelId="agency-select-label"
-                    id="agencyFilter"
-                    value={selectedAgency}
-                    label="Agencia"
-                    onChange={handleAgencyChange}
-                    MenuProps={{
-                      TransitionProps: {
-                        timeout: 300, // Duración de la transición en ms
-                        easing: {
-                          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                          exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                        }
-                      },
-                      PaperProps: {
-                        style: {
-                          maxHeight: 224, // Altura máxima del menú
-                          boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)' // Sombra más suave
-                        }
+            <div className="w-32">
+              <FormControl fullWidth size="small">
+                <InputLabel id="agency-select-label">Agencia</InputLabel>
+                <Select
+                  labelId="agency-select-label"
+                  id="agencyFilter"
+                  value={selectedAgency}
+                  label="Agencia"
+                  onChange={handleAgencyChange}
+                  MenuProps={{
+                    TransitionProps: {
+                      timeout: 300,
+                      easing: {
+                        enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                        exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
                       }
-                    }}
-                  >
-                    <MenuItem value="">Todas las agencias</MenuItem>
-                    {agencies.map(agency => (
-                      <MenuItem key={agency} value={agency}>{agency}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
+                    },
+                    PaperProps: {
+                      style: {
+                        maxHeight: 224,
+                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)'
+                      }
+                    }
+                  }}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {agencies.map(agency => (
+                    <MenuItem key={agency} value={agency}>{agency}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
 
-            <div className="flex-grow-0 min-w-[150px]">
-              <Box sx={{ minWidth: 120, width: '100%' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="status-select-label">Status</InputLabel>
-                  <Select
-                    labelId="status-select-label"
-                    id="statusFilter"
-                    value={selectedStatus}
-                    label="Status"
-                    onChange={handleStatusChange}
-                    MenuProps={{
-                      TransitionProps: {
-                        timeout: 300,
-                        easing: {
-                          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                          exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                        }
-                      },
-                      PaperProps: {
-                        style: {
-                          maxHeight: 224,
-                          boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)'
-                        }
+            <div className="w-32">
+              <FormControl fullWidth size="small">
+                <InputLabel id="status-select-label">Status</InputLabel>
+                <Select
+                  labelId="status-select-label"
+                  id="statusFilter"
+                  value={selectedStatus}
+                  label="Status"
+                  onChange={handleStatusChange}
+                  MenuProps={{
+                    TransitionProps: {
+                      timeout: 300,
+                      easing: {
+                        enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                        exit: 'cubic-bezier(0.4, 0, 0.2, 1)'
                       }
-                    }}
-                  >
-                    <MenuItem value="">Todos los status</MenuItem>
-                    <MenuItem value="SI">SI</MenuItem>
-                    <MenuItem value="NO">NO</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+                    },
+                    PaperProps: {
+                      style: {
+                        maxHeight: 224,
+                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.15)'
+                      }
+                    }
+                  }}
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="SI">SI</MenuItem>
+                  <MenuItem value="NO">NO</MenuItem>
+                </Select>
+              </FormControl>
             </div>
 
             <Button
               variant="contained"
               onClick={() => { /* Tu función de búsqueda */ }}
-              startIcon={
-                <img
-                  src="https://img.icons8.com/fluency/48/search.png"
-                  alt="icono de búsqueda"
-                  className="h-5 w-5"
-                />
-              }
               sx={{
-                backgroundColor: '#1976d2', // Color azul Material UI
+                backgroundColor: '#1976d2',
                 '&:hover': {
-                  backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
+                  backgroundColor: '#1565c0',
                 },
                 textTransform: 'none',
-                padding: '8px 16px',
+                padding: '8px 12px',
                 borderRadius: '6px',
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-                fontSize: '0.875rem',
+                height: '40px',
+                minWidth: '80px',
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              Buscar
+              <img
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADLUlEQVR4nO2YWU8TURiG505N0DuTarkwBlxiIhLxn4hL4o3GiPuOMWo0uJJGiQtKaYHSVqORH6DxpuFCIdUQ4pK4QJu2YKWgFBi00xYec1oX3BJxzsxI0jc5N3P1PGfO9n2KUkghhfxT/DDPDxu9E7hbswRbsyQ8WdKeDOmWDImmDMHmDK5GjQ1NMFf5X+KFJT5o9k0w7p2E1on88IiRhZYsNGfyw50GlwaNKcadKZoaUpRaBn4X5vjgohcyvkn4a3gNnCm48QnqP5K+No7DA7NNhb8FpX545gP+Ff56XoCr43B5jI46lQWmwHuh3A8JWfBXVLiswqVRYo4xVpox89Lh68ZyAlwcIeZQsRkCL9apH7oNhMcxArVJnlyKMke6gNiwJsBz4QOcfU+N9KNSz2kzHfhz7+HMEGOnBiQupdw5bx48NYNwKsENaTfstC4pOfCcHECtHpRwY+eeB+bDc+IdHI+zXrdA7m1jAfyxOBx9S6NugdzDzBp4qvvp0C3gyTJoBfyRfjgcY0C3QEsWzRL4PjgUI6VfIINmETwHonIEBi2CZ29EwhL6UkmZDr8vArtDEjaxKAOtgN8Thl29OHULiBrWEvgQ7AhRqVugHoqcKVSz4bf3oO58TpEiI6IAN3Xme2FbDy5FVkT3QBTgZsFX9aBtfsViRWZE98AkeLa+4YJiREkpugdGw68NDqdX+LrKFCNSr2KrGyVqFPymZ59Y6n3MsraX8fIHQ8sNkRCtj1z3QDb804+suNnF0jsvWHU/TkV7sq88kCwxROLcKPNrk7TLgq8MDmul3mAe/t5b1rSP5MbqQPJRsTtqjMQVmCW6B6eHUPWcNltfc37l7e4ly9tehsXMf4WvCCRDdk/s3QJXNG5zh41ZTiKieyAKcFHDTueSquqhcepRWRaIL6poHwn/AO+OkhtGS3wRKRI17NF+nEf66RTFyMEY2v4omnhV7g7TubOXhqoQ6/50w5YHkiWrA8mHxZ6+7/BmSsiIvSFWanNH+n4RKEiYHHvhT8yAP2FzR14pMyH230m4IpM2V2S7MlNinyox0+B/kni9sCm65dvHQgopRJmaz39BUHt8KVcUAAAAAElFTkSuQmCC"
+                alt="search"
+                style={{ width: '20px', height: '20px' }}
+              />
+              Buscar empleados
             </Button>
 
             <Button
               variant="contained"
               onClick={resetFilters}
-              startIcon={
-                <img
-                  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFe0lEQVR4nO2YbUwbdRzHT6KLyxbNmIw9wD2U8tjnkilqjMa3e7XEGHyhr0x8YTSZc4liFoxmzKcYdRo2lmXZXe9K2xW2AqUPh4vb9NWW6Ea2TBNg5X/Xa/u/q09hZcL+5lrKSqEU2gJpwjf5BF7w/9/nd/f//XoUwzazmc0Un05UYb0E26y80mHlFbeVj49aeUWx8Mp964iSsPJKxBKMj5p5xWEOKh9af/yzFUPokeW23NMzfnB3z8RtbC1juARrLHz8uHUkDqwjcWTl48iyJMpDginMQSVkCcif6HmpOnvf6lMTB6pPjSf2nBpHayK+P/jXTmsw3m3hlemcsnOiGcKLCajICXNA+bo1qDyp7v3Ud3cOVJ8cS+w+OYZ2r0UBFl5uN/MKzCVqySmaG5OKT5Hqzv3xaeXx64mqb2+jZAEnx0pXwIuX0KPmoNJdtKg/jbwYH0TEmTuosus6qvrmVukKaPsltNUckAeWkzUF5BlzQL5sDsiHDQHYZvT/s6v1GnpMXWvi4T6TX37e6JMPm3zQZ/TDmZSwnMSYhYYZQzu6riWLKM2dV+Vz3FWjX5ky+pTPjf7wrpXuaQnE9hqG4XGDT56aFx9eSB0zniyi6AJMfqU75+P3yS6dT64tdG/DcOxtVdaQBD7EmwI/fae4Aox+uX3Js+qHs4Zh2JFvli8XvRce1A/F7qdll0LvhaioUWn0Qbj4nMJZo1duL3jjHPL6oaUp+CIGH+zObq7U44YdWJHRDcHbuYT1aQZjSDcQ/a0weS+sMQ7D6ezG0g/HXMUcm3WLQZ0QWU2l98KpYhp2/dKJKgxDsdCiphqCn2HlEIMXtqndn3kedUOxmdXM+Q2NbhB+lN1QugH4E1Yu0Q1G+5ITIIMWT/Q9rFyiG4yOzssPpGi6CNuwconOE5VV6ZYMtF6xCiuXNHui0y0e9dhk4ERbNsJF0yv+rOkVURqKE6/mXdTsiUy3eKLquUfNF1NsWAF28YrGLiIVyi4ikhUv513UdDEip8XTGN1lMkLVNPVHR5svRJFKU5o+6VmsXNLYH3XPi/dHkjT2R95fbw8NF36Z4sRfSVY8Q7CgXetc4SBp7Jc60uJz8qixX7qCrXNIVnyL4tTGFRDFCohghfs4K7bmXVh/IfxMY18ELUSa0WxAH5D0pIlkwRHCBgKkDdzC6TCVf1Unqmh0R0Jp+QZ3GukLrFzS4Ja6GtwSyuKexinga33tajq8jeLAGMmCqxQj7i9ok3on3NfgkhIN5yVUn4HWFe5b639oqunwNoIFEyQrINIGZklGOKtl4BOr3qj+vPRDUty1EK1LOoqtcaqcke04A7pwm3CPYASEM8Kbq96kqQ/s1Lqk2Jy0eveR1hlGWof4oN4hvVZqacI++RLFgh4N/XBY4OxdDc6E3lELKmjTOkf41aR0Ng7xgdYhHi3lcSJY0KMeG4IFNzOLKDpap/h9nSOMlqQ33FdMY7c4I9tV1N9VacIGbhI2Aak/a5yhypIUoH61qHGIngzpeebeEu9peoUvKW7x9/y5ov4tyYnHSE74m+KEiQVFMOAmwQBUS0++gZUqNc7QVo1d9GS+2iaxZyLMqq+7Gnv4SJ0dPKdKtjhHt6hra5yhfZRdeIHixEMUJ/pIVvgv+QnLpT5lSRZ0zV/rdKgSPzf5OnF2/HGslEk+CU48sVA69ZqbhFuOtOjSEDYhgbOSBluPUJz4CskJkZyieWRT830xuE14F1uv4OzdHSQHTpA2IUGuUpbIhgH/4rTwVcGjspjUcnf3kjZwjLAJobyiSdk0ABE0+J1gJj8u6cgsOJ2ogmJDTxOM8AFhE1wELdwgaEHGaTBN0GCKoIFA0OAGTgO2lp48tKLX4s1sZjPYSvI/ZkYDkohpw24AAAAASUVORK5CYII="
-                  alt="icono de resetear filtros"
-                  className="h-5 w-5"
-                />
-              }
               sx={{
-                backgroundColor: '#1976d2', // Color azul Material UI
+                backgroundColor: '#1976d2',
                 '&:hover': {
-                  backgroundColor: '#1565c0', // Color azul oscuro al hacer hover
+                  backgroundColor: '#1565c0',
                 },
                 textTransform: 'none',
-                padding: '8px 16px',
+                padding: '8px 12px',
                 borderRadius: '6px',
-                marginLeft: '8px', // Añade un margen a la izquierda para separarlo del botón anterior
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-                fontSize: '0.875rem',
+                height: '40px',
+                minWidth: '80px',
+                fontSize: '0.8rem',
               }}
             >
-              Resetear filtros
+              <img
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGjklEQVR4nO2YaUxUVxTHT+rSSmmtCooVm6hsMsxqaTT9oDX9XhfQCiICAops1aiV2FJbQ2gam0b9UGM/NG1qRDZhtjfzGAaBGRBG2dumcWmpFJi3kPqlYHROc99jmEEHh2UYNeGf/JPhhXvnd+49597zBmBOcxK00dq7CF5WKWt4mZzi/5Mb2E+eC0D8VZynpLlNqhq+QFXDl6tMQz1KmucVNP9QWcMNK2luUEnzXQojf0Vu5E7I6CGl+3iZgbsmN3Aop9hOv4K/S3GrVSa+WGUauq8yDSGxssZpHpW0aAWx0WW5gZjtlVFsoZRmP5RTrENOcSijOIyhmKhZB1fUPwhW1fAXVSZ+ZErgAjznMsWhTM8yBFywXvj75KzCbzDxCUoTzznBVdMFH4NmHS54DqU61jY74DZcoDTxl7yC05MFF+C5MXA9S+BFawbW+ha+ui9AZRrSjQcfmhDclecTgRNgp1kXuI7FGGItc9R38DZcIMC7g9d4ADdwDrmRs8kM/GdyPbNFqmciZYb+18N0+KrM0L9cfMYdj9GzDVId45DqWN4dXIDXipZoGavPAlDS/CVv4AoDXyKj7RGTnVOiYZI8gccQa1iM1tiHfAIvp/nEZxWo3MDdllPse1OdV6pl6zyBS9R2R7TGbl1fzWybMXws/e8yBc0xE54sFN9AUmOq80o0zAfu4BIt80iiYeqiNYM5cjW7CnwlhZG/ONGRKDNwtaQ2pjNvjIbbJdEwDyVaho7RMJkxVQMrwNeSmtlQBc2NeDzLKfauQvcgGF5kKWi+2ONZLlz5U895/6oQX1EY+b89XUJSPXsFXnQpaW6Tx0uIXPnayR+Vz01SI1vw1O1JrONmp0fxtWQUVzEO3NWrnIKXQVKK7X4CXLgtJXpmC7wMkunEDvHJJmu92h4OL4Okembk6e6QxWjzYKBfQfI6LJDXiZDTjnD4FsKhVoQDlgav42LUgx6brMWHGpaAv5Tzx5sCPHGuewBNw17HRpfdd4xvshiUaBgMyLeqwF860hnlOQAr43VsxI+3h8e6w1F44sCj9XHgL+V3b51gB7z/arHmXGefO7hELfqNY5bvwV/K7zo9FoBQAzfFANKtpV7Hhp6xGN3Bo4mrGXzrePMd8JfyOttdAbQhZN1EONhCiviE17HLj5kPuIOLtmPQaZsDEvWRsw/ftd6VPh0I2bcQsmwImTcQ0i2x3ifYbJ4f/vO9R07w9cRVdlx94XeE3fpSPwRQ4TF9Mpr+Io3mpOYILWpqEuCrXI4o+Qdht8YBieaNswaf3/U+5HU4XKtP0seGo+lTNOl5QnJ1sVEV/SL8NTtGjTogy4yQYLgHKfW+f6E5/OsyyOu4PS73x4q3aRj2Waf2uhla3NrjBI+qHBQcUtyBsEuLsLemDuK7F/oMvrB7IeR21o9PHbfcT7Wcn/KcwTm6deGXex874SMrBzH8aj/O26NF2GNA2GduhL2WKb/UT7DytePgnYUrpg4LGeagac0dUlB7joBHVri87PNWhHg1QiKNsN98F1IbN80o53M7743lvJA2bvDpTQhpDfEwE636urWHgEeUiw4r6cP5CRpnKiHsr3NAWkMZZFiipnRU5naUu8DJqjtz3g0+tf4CzFjJ5tdCz7YNRJQPoOCyAVx17jeEHZUIu3UISSYSBEJaI/nSW3CwpRAO2rZCti0KsroDBZPP2e1bIaftC8hubxOAndDZt0RwsuqkYEnOH7AipF5XkyN95gEAQOCR6qDV33bYw8sGUHDpAC471ewKguxEch1CaoP45RnNKKwiASJg5CY97MFZBHoUnPx/BkmZRrIgasioDgBfamWGLeDtMzd6CDxxWEk/Lj5Sj7C9EmGXBiHBiLCvFmH/9dFALCIQWVEC5wzIaeezzObRXLcgpNSTw+GCz1bek4I/NX+35qc/H4dd7ReCWHLSirCtHCGuGuFjvVjcQiB1IhBZURIM2Zn0UZPP5FlaoxhsynUyxg5JppkV7GQVlKsODylq7Vp7uQ/XlfTjyrPduCChWtyNOLUYCNkRUh8kmGSzGBDZHcF1YsolmxGSaochkT4P8dRSv8CPD8SwIeSrlqZ3frjzaM0v93FpQRPOi6tE2FaBsLMKIV4j1sgeitzgYlCCDeQu6YXduiKIV/vuB91pa7N5/tKj5pTlX7ZQK77p7F1S0DywKNP4YN6uaw/ho/IR2FbJwfbKDthRWQo7q07A9upYKCycXGM2pznNCZ6l/wE+2JYuKECxGAAAAABJRU5ErkJggg=="
+                alt="search"
+                style={{ width: '20px', height: '20px' }}
+              />
+              Resetear Filtro
+            </Button>
+
+            <Button
+              variant="contained"
+              onClick={openModal}
+              sx={{
+                backgroundColor: '#1976d2',
+                '&:hover': {
+                  backgroundColor: '#1565c0',
+                },
+                textTransform: 'none',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                height: '40px',
+                minWidth: '80px',
+                fontSize: '0.8rem',
+              }}
+            >
+              <img
+                src="data:image/png;base64,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"
+                alt="search"
+                style={{ width: '20px', height: '20px' }}
+              />
+              Agregar empleado
+            </Button>
+
+            <Button
+              variant="contained"
+              onClick={openAdminModal}
+              sx={{
+                backgroundColor: '#1976d2',
+                '&:hover': {
+                  backgroundColor: '#1565c0',
+                },
+                textTransform: 'none',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                height: '40px',
+                minWidth: '100px',
+                fontSize: '0.8rem',
+              }}
+            >
+              <img
+                src="data:image/png;base64,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"
+                alt="search"
+                style={{ width: '20px', height: '20px' }}
+              />
+              Agregar nuevo administrador
             </Button>
           </div>
         </div>
@@ -1554,7 +1548,7 @@ function RhAdmin() {
                   <h3 className="text-lg font-medium mb-4">{isEditing ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h3>
                   <form onSubmit={handleSubmitAdminForm}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
+
                       {/* Nombre */}
                       <div>
                         <TextField
