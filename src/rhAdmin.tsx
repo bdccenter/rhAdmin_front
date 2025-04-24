@@ -19,10 +19,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es'; // Importar locale español
 import { esES } from '@mui/x-date-pickers/locales';
 import { Checkbox, FormControlLabel } from '@mui/material';
-import { useTheme } from './context/ThemeContext';
-import Brightness4Icon from '@mui/icons-material/Brightness4'; // Modo oscuro
-import Brightness7Icon from '@mui/icons-material/Brightness7'; // Modo claro
-
 
 dayjs.locale('es');
 
@@ -110,9 +106,6 @@ const convertGoogleDriveUrl = (url: string): string => {
 };
 
 function RhAdmin() {
-
-  // Importar el contexto de tema
-  const { darkMode, toggleTheme } = useTheme();
 
   // Estado para controlar la carga inicial
   const [isLoading, setIsLoading] = useState(false);
@@ -394,7 +387,6 @@ function RhAdmin() {
     }
   };
 
-  // Función para abrir el modal en modo creación
   // Función para abrir el modal en modo creación
   const openAdminModal = () => {
     // Solo permitir a superusuarios
