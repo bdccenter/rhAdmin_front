@@ -46,7 +46,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Consultar el usuario por email
     const [users] = await connection.query(`
-      SELECT id, name, last_name, email, password, agency 
+      SELECT id, name, last_name, email, password, agency, is_superuser 
       FROM Users 
       WHERE email = ?
     `, [email]);
@@ -72,7 +72,8 @@ app.post('/api/auth/login', async (req, res) => {
       name: user.name,
       last_name: user.last_name,
       email: user.email,
-      agency: user.agency
+      agency: user.agency,
+      is_superuser: user.is_superuser
     };
 
     const token = crypto.randomBytes(64).toString('hex');
@@ -180,7 +181,7 @@ app.get('/api/employees/:id', async (req, res) => {
 app.post('/api/users', async (req, res) => {
   // Ruta para crear un nuevo usuario/administrador
   try {
-    const { name, last_name, email, password, agency } = req.body;
+    const { name, last_name, email, password, agency, is_superuser } = req.body;
 
     if (!name || !last_name || !email || !password || !agency) {
       return res.status(400).json({ message: 'Todos los campos son requeridos' });
@@ -201,9 +202,9 @@ app.post('/api/users', async (req, res) => {
 
     // Insertar el nuevo usuario
     const [result] = await connection.query(`
-      INSERT INTO Users (name, last_name, email, password, agency) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [name, last_name, email, hashedPassword, agency]);
+      INSERT INTO Users (name, last_name, email, password, agency, is_superuser) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [name, last_name, email, hashedPassword, agency, is_superuser || 0]);
 
     connection.release();
 
@@ -223,12 +224,10 @@ app.get('/api/users', async (req, res) => {
   try {
     const connection = await pool.getConnection();
 
-    // Modificado para manejar el caso donde la columna admin no existe
     const [users] = await connection.query(`
-      SELECT id, name, last_name, email, agency, 
-      'No' as admin 
+      SELECT id, name, last_name, email, agency, is_superuser
       FROM Users 
-      ORDER BY id DESC
+      ORDER BY id ASC
     `);
 
     // Liberar la conexión después de usarla
@@ -248,9 +247,8 @@ app.get('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const connection = await pool.getConnection();
 
-    // Eliminamos 'admin' de la consulta
     const [users] = await connection.query(`
-      SELECT id, name, last_name, email, agency
+      SELECT id, name, last_name, email, agency, is_superuser
       FROM Users
       WHERE id = ?
     `, [id]);
@@ -278,7 +276,7 @@ app.get('/api/users/:id', async (req, res) => {
 app.put('/api/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, last_name, email, password, agency } = req.body;
+    const { name, last_name, email, password, agency, is_superuser } = req.body;
 
     // Eliminamos admin del destructuring ya que no existe la columna
     const connection = await pool.getConnection();
@@ -299,18 +297,17 @@ app.put('/api/users/:id', async (req, res) => {
       const hashedPassword = crypto.createHash('md5').update(password).digest('hex');
       query = `
         UPDATE Users 
-        SET name = ?, last_name = ?, email = ?, password = ?, agency = ?
+        SET name = ?, last_name = ?, email = ?, password = ?, agency = ?, is_superuser = ?
         WHERE id = ?
       `;
-      params = [name, last_name, email, hashedPassword, agency, id];
+      params = [name, last_name, email, hashedPassword, agency, is_superuser || 0, id];
     } else {
-      // Si no hay nueva contraseña, no cambiar la existente
       query = `
         UPDATE Users 
-        SET name = ?, last_name = ?, email = ?, agency = ?
+        SET name = ?, last_name = ?, email = ?, agency = ?, is_superuser = ?
         WHERE id = ?
       `;
-      params = [name, last_name, email, agency, id];
+      params = [name, last_name, email, agency, is_superuser || 0, id];
     }
 
     await connection.query(query, params);

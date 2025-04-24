@@ -4,6 +4,84 @@
 
 /* Añade estas animaciones para las notificaciones a tu archivo index.css */
 
+
+/* Actualiza estas variables en tu archivo index.css */
+
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+  --header-bg: #493F91;
+  --header-text: #ffffff;
+  --accent-color: #1976d2;
+  --accent-hover: #1565c0;
+  --error-color: #dc2626;
+  --success-color: #10b981;
+  --table-header-bg: #f3f4f6;
+  --table-row-hover: #f9fafb;
+}
+
+.dark-mode {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --header-bg: #000000; /* Cambiado para mejorar contraste con logo blanco */
+  --header-text: #ffffff;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+  --table-header-bg: #111827; /* Fondo más oscuro para cabeceras de tabla */
+  --table-row-hover: #1f2937; /* Color al pasar el ratón por filas */
+}
+
+/* Añadir clases específicas para texto en tablas para modo oscuro */
+.dark-mode .table-cell {
+  color: #f9fafb !important;
+}
+
+.dark-mode .table-header {
+  color: #ffffff !important;
+  font-weight: 600;
+  background-color: #111827;
+}
+
+/* Estilos para mejorar contraste en botones en modo oscuro */
+.dark-mode .btn-primary {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode .btn-secondary {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+}
+
+/* Estilos para el contenedor de logo en modo oscuro */
+.dark-mode .logo-container {
+  background-color: #000000;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Mejora los estilos de la pantalla de carga en modo oscuro */
+.dark-mode .loading-screen {
+  background-color: #111827;
+}
+
+.dark-mode .loading-text {
+  color: #d1d5db;
+}
+
+.dark-mode .loading-spinner {
+  border-color: rgba(59, 130, 246, 0.3);
+  border-top-color: #3b82f6;
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;

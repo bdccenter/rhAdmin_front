@@ -18,6 +18,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es'; // Importar locale español
 import { esES } from '@mui/x-date-pickers/locales';
+import { Checkbox, FormControlLabel } from '@mui/material';
+import { useTheme } from './context/ThemeContext';
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // Modo oscuro
+import Brightness7Icon from '@mui/icons-material/Brightness7'; // Modo claro
 
 
 dayjs.locale('es');
@@ -41,6 +45,7 @@ interface Employee {
 }
 
 interface NewAdminForm {
+  is_superuser: any;
   nombre: string;
   apellido: string;
   correo: string;
@@ -106,6 +111,9 @@ const convertGoogleDriveUrl = (url: string): string => {
 
 function RhAdmin() {
 
+  // Importar el contexto de tema
+  const { darkMode, toggleTheme } = useTheme();
+
   // Estado para controlar la carga inicial
   const [isLoading, setIsLoading] = useState(false);
   // Auth Context para funcionalidad de logout
@@ -123,9 +131,6 @@ function RhAdmin() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   // Estado para controlar si estamos editando un usuario
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  // Estado para controlar si el usuario es superusuario
-  const [isSuperuser, setIsSuperuser] = useState<boolean>(false);
-
   // Ref para controlar si ya se mostró la notificación
   const notificationShown = useRef(false);
   // Estado para almacenar los datos del formulario de administrador
@@ -137,13 +142,21 @@ function RhAdmin() {
   // Estado para almacenar los datos de empleados procesados
   // y los términos de búsqueda y filtros
   const [employeesData, setEmployeesData] = useState<ProcessedEmployee[]>([]);
+  // Estado para almacenar los datos del formulario de nuevo empleado
   const [loading, setLoading] = useState<boolean>(true);
+  // Estado para manejar errores
   const [error, setError] = useState<string | null>(null);
+  // Estado para manejar la búsqueda y filtros
   const [nameSearchTerm, setNameSearchTerm] = useState<string>('');
+  // Estado para manejar la búsqueda y filtros
   const [otherSearchTerm, setOtherSearchTerm] = useState<string>('');
+  // Estado para manejar la búsqueda y filtros
   const [selectedAgency, setSelectedAgency] = useState<string>('');
+  // Estado para manejar la búsqueda y filtros
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  // Estado para manejar la búsqueda y filtros
   const [agencies, setAgencies] = useState<string[]>([]);
+  // Estado para manejar la búsqueda y filtros
   const [showModal, setShowModal] = useState<boolean>(false);
 
   // Función para mostrar notificaciones
@@ -152,13 +165,14 @@ function RhAdmin() {
       try {
         // Llamada a la API para eliminar el empleado
         const response = await axios.delete(`${API_URL}/employees/${employeeId}`);
-
+        // Verificar si la respuesta fue exitosa
         if (response.data.success) {
           showNotification('success', 'Empleado eliminado exitosamente');
           closeEditEmployeeModal();
           fetchEmployees(); // Recargar la lista de empleados
         }
-      } catch (err: any) {
+        // Mostrar notificación de éxito
+      } catch (err: any) { // Mostrar notificación de error
         const errorMessage = err.response?.data?.message || 'Error al eliminar empleado';
         showNotification('error', errorMessage);
         console.error('Error al eliminar empleado:', err);
@@ -170,10 +184,11 @@ function RhAdmin() {
   const openEditEmployeeModal = (employee: ProcessedEmployee) => {
     // Formatear las fechas para el input date (YYYY-MM-DD)
     const formatDateForInput = (dateStr: string) => {
+      // Si la fecha es nula o vacía, retornar una cadena vacía
       if (!dateStr) return '';
-      const parts = dateStr.split('/');
-      if (parts.length !== 3) return '';
-      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      const parts = dateStr.split('/'); // Cambia esto si el formato es diferente
+      if (parts.length !== 3) return ''; // Verifica que tenga el formato correcto
+      return `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
     };
 
     // Establecer los datos del empleado a editar
@@ -256,7 +271,7 @@ function RhAdmin() {
       correo: user.email,
       password: '',
       agencia: user.agency || '',
-      isSuperuser: user.admin === 'Sí'
+      is_superuser: user.is_superuser // Cargar el estado de superusuario del usuario
     });
     setShowEditModal(true);
   };
@@ -271,21 +286,19 @@ function RhAdmin() {
   const handleSaveEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar que los campos requeridos estén llenos
     try {
       await axios.put(`${API_URL}/users/${editUserData.id}`, {
         name: editUserData.nombre,
         last_name: editUserData.apellido,
         email: editUserData.correo,
-        password: editUserData.password, // El backend manejará si está vacío
+        password: editUserData.password,
         agency: editUserData.agencia,
-        admin: editUserData.isSuperuser
+        is_superuser: editUserData.is_superuser // Enviar el estado de superusuario
       });
 
-      // Mostrar notificación de éxito
       showNotification('success', 'Usuario actualizado exitosamente');
       closeEditModal();
-      fetchUsers(); // Recargar la lista
+      fetchUsers();
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Error al actualizar usuario';
       showNotification('error', errorMessage);
@@ -353,9 +366,9 @@ function RhAdmin() {
           name: adminFormData.nombre,
           last_name: adminFormData.apellido,
           email: adminFormData.correo,
-          password: adminFormData.password, // El backend manejará si está vacío
+          password: adminFormData.password,
           agency: adminFormData.agencia,
-          admin: isSuperuser
+          is_superuser: adminFormData.is_superuser
         });
         // Mostrar notificación de éxito
         showNotification('success', 'Usuario actualizado exitosamente');
@@ -367,9 +380,8 @@ function RhAdmin() {
           email: adminFormData.correo,
           password: adminFormData.password,
           agency: adminFormData.agencia,
-          admin: isSuperuser
+          is_superuser: adminFormData.is_superuser
         });
-        // 
         showNotification('success', 'Usuario creado exitosamente');
       }
       // Cerrar el modal y recargar la lista de usuarios
@@ -383,7 +395,14 @@ function RhAdmin() {
   };
 
   // Función para abrir el modal en modo creación
+  // Función para abrir el modal en modo creación
   const openAdminModal = () => {
+    // Solo permitir a superusuarios
+    if (user?.is_superuser !== 1) {
+      showNotification('error', 'No tienes permisos para gestionar administradores');
+      return;
+    }
+
     // Limpiar los datos del formulario
     setSelectedUserId(null);
     setIsEditing(false);
@@ -392,10 +411,10 @@ function RhAdmin() {
       apellido: '',
       correo: '',
       password: '',
-      agencia: ''
+      agencia: '',
+      is_superuser: 0 // Inicializar el campo is_superuser
     });
-    // Limpiar el estado de superusuario
-    setIsSuperuser(false);
+
     setShowAdminModal(true);
   };
 
@@ -410,11 +429,10 @@ function RhAdmin() {
       apellido: '',
       correo: '',
       password: '',
-      agencia: ''
+      agencia: '',
+      is_superuser: 0 // Resetear el campo is_superuser
     });
-    // Limpiar el estado de superusuario
-    setIsSuperuser(false);
-  };
+  }
 
   // Estado para el formulario de nuevo empleado
   const [formData, setFormData] = useState<NewEmployeeForm>({
@@ -434,7 +452,8 @@ function RhAdmin() {
     apellido: '',
     correo: '',
     password: '',
-    agencia: ''
+    agencia: '',
+    is_superuser: 0
   });
 
 
@@ -442,15 +461,20 @@ function RhAdmin() {
   const handleAdminFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
+    const { name, value, type } = e.target as { name: string; value: string; type?: string };
 
-    const { name, value } = e.target;
-
-    // Asegúrate de que 'name' exista (es buena práctica, aunque Select con prop 'name' lo tendrá)
-    if (name) {
-      setAdminFormData(prev => ({
-        ...prev,
+    // Si el tipo es checkbox, manejarlo como booleano
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setAdminFormData({
+        ...adminFormData,
+        [name]: checked ? 1 : 0
+      });
+    } else {
+      setAdminFormData({
+        ...adminFormData,
         [name]: value
-      }));
+      });
     }
   };
 
@@ -460,15 +484,18 @@ function RhAdmin() {
 
     // Simular tiempo de carga para una transición suave
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      setIsLoading(false); // Desactivar la carga después de 1.5 segundos
     }, 1500); // 1.5 segundos de carga
-
+    // Limpiar el temporizador al desmontar el componente
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Cargar usuarios cuando se abre el modal de administrador
   useEffect(() => {
+    // Si el modal de administrador está abierto, cargar usuarios
     if (showAdminModal) {
+      // Llamar a la función para cargar usuarios
       fetchUsers();
     }
   }, [showAdminModal]);
@@ -501,12 +528,13 @@ function RhAdmin() {
   };
 
   // Función para cargar los empleados desde la API
-  // Función para cargar los empleados desde la API
   const fetchEmployees = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    // Limpiar el estado de error antes de la carga
+    try { // Limpiar el estado de error
+      setLoading(true); // Iniciar carga
+      setError(null); // Limpiar error
 
+      // Llamada a la API para obtener empleados
       const response = await axios.get(`${API_URL}/employees`);
 
       // Procesar datos: convertir las URLs de fotos y obtener nombres de usuarios
@@ -574,17 +602,18 @@ function RhAdmin() {
 
   // Calcular empleados para la página actual
   const indexOfLastItem = currentPage * itemsPerPage;
+  // Calcular el índice del primer elemento de la página actual
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // Obtener los empleados que se mostrarán en la página actual
   const currentEmployees = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
-
   // Calcular total de páginas
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
 
   // Funciones de navegación
   const nextPage = () => {
     // Si hay más páginas, incrementar la página actual
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) { // Verificar si hay más páginas
+      setCurrentPage(currentPage + 1); // Incrementar la página actual
     }
   };
 
@@ -629,7 +658,6 @@ function RhAdmin() {
   };
 
   // Maneja el envío del formulario de nuevo empleado
-  // Reemplaza la función handleSubmitForm actual con esta:
   const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -692,7 +720,6 @@ function RhAdmin() {
     });
   };
 
-
   return (
     // Renderizar el componente
     <div className="min-h-screen bg-gray-50">
@@ -704,10 +731,12 @@ function RhAdmin() {
         </div>
       )}
       {/* Header */}
-      <div className="text-white p-4" style={{ backgroundColor: '#493F91' }}>
+      <div className="text-white p-4" style={{ backgroundColor: 'var(--header-bg)' }}>
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {/* Logo AUTO INSIGHTS */}
+
+
             <img
               src="./img/AUTO_INSIGHTS_LOGO-03.jpg"
               alt="Auto Insights Logo"
@@ -720,6 +749,7 @@ function RhAdmin() {
             />
             <h1 className="text-xl font-semibold">Registro de Empleados</h1>
           </div>
+          
           <Button
             variant="contained"
             onClick={handleLogout}
@@ -916,29 +946,31 @@ function RhAdmin() {
               Agregar empleado
             </Button>
 
-            <Button
-              variant="contained"
-              onClick={openAdminModal}
-              sx={{
-                backgroundColor: '#1976d2',
-                '&:hover': {
-                  backgroundColor: '#1565c0',
-                },
-                textTransform: 'none',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                height: '40px',
-                minWidth: '100px',
-                fontSize: '0.8rem',
-              }}
-            >
-              <img
-                src="data:image/png;base64,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"
-                alt="search"
-                style={{ width: '20px', height: '20px' }}
-              />
-              Agregar nuevo administrador
-            </Button>
+            {user?.is_superuser === 1 && (
+              <Button
+                variant="contained"
+                onClick={openAdminModal}
+                sx={{
+                  backgroundColor: '#1976d2',
+                  '&:hover': {
+                    backgroundColor: '#1565c0',
+                  },
+                  textTransform: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  height: '40px',
+                  minWidth: '100px',
+                  fontSize: '0.8rem',
+                }}
+              >
+                <img
+                  src="data:image/png;base64,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"
+                  alt="search"
+                  style={{ width: '20px', height: '20px' }}
+                />
+                Agregar nuevo administrador
+              </Button>
+            )}
           </div>
         </div>
 
@@ -1435,7 +1467,7 @@ function RhAdmin() {
         )}
 
         {/* Modal para gestión de administradores */}
-        {showAdminModal && (
+        {showAdminModal && user?.is_superuser === 1 && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl overflow-auto max-h-[90vh]">
               <div className="p-6">
@@ -1469,6 +1501,7 @@ function RhAdmin() {
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Agencia</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rol</th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
                           </tr>
                         </thead>
@@ -1495,15 +1528,21 @@ function RhAdmin() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{`${user.name} ${user.last_name}`}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.agency || '-'}</td>
+                                {/* Nueva columna para mostrar el estado de superusuario */}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_superuser === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    {user.is_superuser === 1 ? 'Superuser' : 'Normal'}
+                                  </span>
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                   <Button
                                     variant="contained"
                                     onClick={() => openEditModal(user)}
                                     size="small"
                                     sx={{
-                                      backgroundColor: '#1976d2', // Color azul como el de Agregar Empleado
+                                      backgroundColor: '#1976d2',
                                       '&:hover': {
-                                        backgroundColor: '#1565c0', // Un tono más oscuro para el hover
+                                        backgroundColor: '#1565c0',
                                       },
                                       textTransform: 'none',
                                       padding: '4px 10px',
@@ -1520,9 +1559,9 @@ function RhAdmin() {
                                     onClick={() => handleDeleteUser(user.id)}
                                     size="small"
                                     sx={{
-                                      backgroundColor: '#dc2626', // Color rojo
+                                      backgroundColor: '#dc2626',
                                       '&:hover': {
-                                        backgroundColor: '#b91c1c', // Un tono más oscuro para el hover
+                                        backgroundColor: '#b91c1c',
                                       },
                                       textTransform: 'none',
                                       padding: '4px 10px',
@@ -1696,9 +1735,27 @@ function RhAdmin() {
                             ))}
                           </Select>
                         </FormControl>
+
+                        <div className="mt-4">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={adminFormData.is_superuser === 1}
+                                onChange={(e: { target: { checked: any; }; }) => {
+                                  setAdminFormData({
+                                    ...adminFormData,
+                                    is_superuser: e.target.checked ? 1 : 0
+                                  });
+                                }}
+                                name="is_superuser"
+                              />
+                            }
+                            label="Super Usuario (Puede gestionar otros administradores)"
+                          />
+                        </div>
                       </div>
                     </div>
-
+                    {/* URL de Foto */}
                     <div className="mt-6 flex justify-end space-x-3">
                       {isEditing && (
                         <button
@@ -1709,7 +1766,7 @@ function RhAdmin() {
                           Volver a la Lista
                         </button>
                       )}
-
+                      {/* // Botones de guardar y cancelar */}
                       <button
                         type="button"
                         onClick={closeAdminModal}
@@ -1868,6 +1925,30 @@ function RhAdmin() {
                           </option>
                         ))}
                       </select>
+
+                      <div className="mt-4">
+                        <label htmlFor="editIsSuperuser" className="block text-sm font-medium text-gray-700 mb-1">
+                          Permisos de administrador
+                        </label>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id="editIsSuperuser"
+                            name="is_superuser"
+                            checked={editUserData.is_superuser === 1}
+                            onChange={(e) => {
+                              setEditUserData({
+                                ...editUserData,
+                                is_superuser: e.target.checked ? 1 : 0
+                              });
+                            }}
+                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor="editIsSuperuser" className="ml-2 block text-sm text-gray-900">
+                            Super Usuario (Puede gestionar otros administradores)
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

@@ -19,6 +19,7 @@ interface User {
   last_name: string;
   email: string;
   agency: string;
+  is_superuser: number;
 }
 
 // Valor por defecto del contexto
