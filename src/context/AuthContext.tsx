@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-// URL base de la API
+// URL base de la API - Asegúrate de que esta URL sea correcta
 const API_URL = 'https://rhadminback-production.up.railway.app';
 
 // Definición de tipos
@@ -27,7 +27,7 @@ const defaultAuthContext: AuthContextType = {
   isAuthenticated: false,
   user: null,
   login: async () => false,
-  logout: () => {},
+  logout: () => { },
 };
 
 // Crear el contexto
@@ -60,28 +60,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Función para manejar el inicio de sesión
+  // En la función login de AuthContext.tsx
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      console.log('Intentando iniciar sesión con:', { email });
+      console.log('URL de la API:', `${API_URL}/api/auth/login`);
+
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password
       });
-      
+
+      console.log('Respuesta del servidor:', response);
+
       if (response.status === 200 && response.data.success) {
-        // Guardar token y datos de usuario
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Actualizar estado
         setUser(response.data.user);
         setIsAuthenticated(true);
-        
         return true;
       }
-      
+
       return false;
     } catch (error) {
-      console.error('Error en el inicio de sesión:', error);
+      // Manejo mejorado de errores
+      if (axios.isAxiosError(error)) {
+        console.error('Error en la solicitud HTTP:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message
+        });
+
+        // Añadir mensaje específico según el tipo de error
+        if (error.response?.status === 404) {
+          console.error('La ruta de la API no existe. Verifica la URL.');
+        } else if (error.response?.status === 401) {
+          console.error('Credenciales incorrectas.');
+        } else if (error.code === 'ECONNREFUSED') {
+          console.error('No se pudo conectar al servidor. Verifica que el backend esté funcionando.');
+        }
+      } else {
+        console.error('Error no relacionado con Axios:', error);
+      }
       return false;
     }
   };
