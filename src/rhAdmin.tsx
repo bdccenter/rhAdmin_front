@@ -68,7 +68,8 @@ interface NewEmployeeForm {
 }
 
 // URL base de la API
-const API_URL = 'https://rhadminback-production.up.railway.app';
+const API_URL = 'https://rhadminback-production.up.railway.app/api';
+
 
 // Lista de agencias disponibles
 const AGENCIAS = [
