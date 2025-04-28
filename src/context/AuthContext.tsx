@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
 // URL base de la API
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'https://rhadminback-production.up.railway.app';
 
 // Definición de tipos
 interface AuthContextType {
