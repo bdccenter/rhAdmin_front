@@ -13,24 +13,24 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     // Simular tiempo de carga
     const timer = setTimeout(() => {
       setIsFadingOut(true);
-      
+
       // Después de que se completa la animación de fadeOut, eliminar la pantalla de carga
       const fadeTimer = setTimeout(() => {
         setIsLoading(false);
       }, 500); // Duración de la animación de fadeOut
-      
+
       return () => clearTimeout(fadeTimer);
     }, 1200); // Tiempo total de carga
-    
+
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
     return (
       <div className={`loading-screen ${isFadingOut ? 'fade-out' : ''}`}>
-        <img 
-          src="./img/AUTO-INSIGHTS-10.png" 
-          alt="Auto Insights Logo" 
+        <img
+          src="https://i.imgur.com/6exNtsQ.png"
+          alt="Auto Insights Logo"
           className="loading-logo"
         />
         <div className="loading-spinner"></div>

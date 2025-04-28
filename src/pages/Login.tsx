@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
-import { useNotification } from '../context/NotificationContext'; 
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
@@ -48,7 +48,7 @@ const Login = () => {
                 {/* Overlay opcional, puedes ajustar el color y opacidad */}
                 <div className="absolute inset-0 bg-black bg-opacity-25 z-10"></div>
                 <img
-                    src="/img/iconautotest.png" // Asegúrate que esta ruta es correcta
+                    src="https://i.imgur.com/ruT91KC.png" // Esta es la URL directa de la imagen
                     alt="Background"
                     className="object-cover w-full h-full"
                 />
@@ -147,7 +147,7 @@ const Login = () => {
                                     '&.Mui-focused fieldset': {
                                         borderColor: '#FFFFFF', // Borde blanco al enfocar
                                     },
-                                     // Color de fondo condicional
+                                    // Color de fondo condicional
                                     backgroundColor: password ? '#FFFFFF' : '#1F2937',
                                     transition: 'background-color 0.3s ease',
                                     borderRadius: '0.5rem',
@@ -229,13 +229,13 @@ const Login = () => {
             {/* Si el isLoading se pone en false antes de navegar, este overlay desaparecerá */}
             {/* Si quieres que se muestre hasta que la navegación ocurra, mantén isLoading true hasta después del navigate */}
             {isLoading && (
-                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                     <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-                         {/* Puedes usar el mismo spinner del botón u otro */}
-                         <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                         <p className="text-gray-700 font-medium">Iniciando sesión...</p>
-                     </div>
-                 </div>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                        {/* Puedes usar el mismo spinner del botón u otro */}
+                        <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-gray-700 font-medium">Iniciando sesión...</p>
+                    </div>
+                </div>
             )}
         </div>
     );
